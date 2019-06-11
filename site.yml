@@ -4,14 +4,11 @@ site:
   title: создание демо-сайта Antora
   url: https://example.org/docs 
 #  start_page: component-b::index.adoc 
-  start_page: adoc_site::index.adoc 
+  start_page: module-sec::index.adoc 
 content:
   sources:
-#  - url: https://gitlab.com/antora/demo/demo-component-a.git
-#    branches: master
-  - url: https://github.com/gipast/adoc_site.git
+  - url: https://github.com/gipast/adoc-module-1.git
     branches: master
-    start_path: docs
   - url: https://gitlab.com/antora/demo/demo-component-b.git
     branches: [v2.0, v1.0]
     start_path: docs
@@ -19,3 +16,7 @@ ui:
   bundle:
     url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/master/raw/build/ui-bundle.zip?job=bundle-stable
     snapshot: true
+runtime:
+  cache_dir: ./.cache/antora
+  #fetch: true
+
