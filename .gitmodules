@@ -1,0 +1,3 @@
+[submodule "demo-component-a-master/demo-component-a"]
+	path = demo-component-a-master/demo-component-a
+	url = https://gitlab.com/antora/demo/demo-component-a
