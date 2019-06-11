@@ -1,0 +1,50 @@
+ ;  GPSS/PC Program file B:SCHR2F                04-17-1984   13:47:03
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+110         SIMULATE    
+120 *
+130 *         STORAGE CAPACITY DEFINITIONS
+140 *
+150 TESTERS STORAGE     2                    ;2 workers at last station
+160 *
+170 *         MODEL SEGMENT 1
+180 *
+190         GENERATE    55,20                ;Sets arrive from last station
+200 BACKPLACE QUEUE     AREA1                ;Enter inspection waiting area
+210         ENTER       TESTERS              ;Capture an inspector
+220         DEPART      AREA1                ;Leave the waiting area
+230         ADVANCE     90,30                ;Set is being inspected
+240         LEAVE       TESTERS              ;Free the inspector
+250         TRANSFER    .15,,FIX             ;To packing or adjust. station
+260         TERMINATE                        ;Set moves on to packing
+300 FIX     QUEUE       AREA2                ;Enter adjustment waiting area
+310         SEIZE       FIXER                ;Capture the adjustor
+320         DEPART      AREA2                ;Leave the waiting area
+330         ADVANCE     300,100              ;Set is being adjusted
+340         RELEASE     FIXER                ;Free the adjuster
+350         TRANSFER    ,BACKPLACE           ;Go back to be inspected
+370 *
+380 *       MODEL SEGMENT 2
+390 *
+400         GENERATE    DURATION             ;Timer
+410         TERMINATE   1                    ;shuts off the run
+420 *
+430 *        Control Cards
+440 *
+445 *
+450 *
+460 *       Duration is 1 day
+540 *
+563 DURATION EQU 4800
+565 *
+567 *
+590         REPORT      SCHR2F1.REP          ;After 1 day
+600         START       1                    ;Start run for the first day
+610         REPORT      SCHR2F2.REP          ;After 2 days
+630         START       1                    ;Start run for the second day
+650         REPORT      SCHR2F3.REP          ;After 3 days
+660         START       1                    ;Start run for the third day
+670         REPORT      SCHR2F4.REP          ;After 4 days
+680         START       1                    ;Start run for the fourth day
+690         REPORT      SCHR2F5.REP          ;After 5 days
+700         START       1                    ;Start run for the fifth day
+

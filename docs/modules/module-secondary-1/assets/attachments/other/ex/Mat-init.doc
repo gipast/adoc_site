@@ -1,0 +1,25 @@
+
+
+
+Program MAT-INIT
+
+
+The purpose of the program Mat-init.exe is to write INITIAL statements for a
+
+GPSS/PC matrix savevalue (one INITIAL statement per line).  Matrix values must
+
+be entered in a row-wise manner.  However, values must be separated by one or
+
+more spaces.  The values are restricted to the range -32768 to +32767.  Zero
+
+values must be entered explicitly.  INITIAL statements are stored in an ASCII
+
+file.  This file can be used to initialize a matrix savevalue by using
+
+@filespec before invoking the START control statement.
+
+
+*Please note:  This program has been supplied by a user of GPSS/PC with
+               the hope that it will be useful to other users.
+	       It is supplied "as is" with no warranty of any kind.
+

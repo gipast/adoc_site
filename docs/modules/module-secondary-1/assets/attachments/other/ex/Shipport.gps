@@ -1,0 +1,135 @@
+
+;     SHIPPORT.GPS, by Gerard F. Cummings
+100 *******************************************         
+110 *                                         *         
+120 *        SHIP AND PORT SIMULATION         *         
+130 *            GPSS/PC PROGRAM              *         
+140 *******************************************         
+160 BERTH1  EQU          1         
+170 BERTH2  EQU          2         
+180 BERTH3  EQU          3         
+190 TIDE    EQU          1         
+200 TSMALL  EQU          1         
+210 TMEDIUM EQU          2         
+220 TLARGE  EQU          3         
+230 XPDIS   FUNCTION     RN1,C24              ;EXPONENTIAL FUNCTION
+0.0,0.0/0.1,.104/.2,.222/.3,.335/.4,.509/.5,.69
+0.6,.915/.7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12
+0.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2/.97,3.5
+0.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7.0/.9997,8.0
+235 *
+245 *------Boolean Variables-----------------
+250 VAR1    BVARIABLE    (R$BERTH2'GE'1+R$BERTH3'GE'1)#Q3'E'0         
+260 VAR2    BVARIABLE    R$BERTH2'GE'1         
+270 VAR3    BVARIABLE    R$BERTH3'GE'1         
+280 VAR4    BVARIABLE    SE$BERTH1         
+290 VAR5    BVARIABLE    (R$BERTH2'GE'2+R$BERTH3'GE'2)#Q3'E'0         
+300 VAR6    BVARIABLE    R$BERTH2'GE'2         
+310 VAR7    BVARIABLE    R$BERTH3'GE'2         
+320 VAR8    BVARIABLE    SE$BERTH3#LS1         
+330 VAR9    BVARIABLE    SE$BERTH2#LS1   
+335 *
+340 *--Size of Berths in relation to small ships--         
+350 BERTH1  STORAGE      2         
+360 BERTH2  STORAGE      4         
+370 BERTH3  STORAGE      4   
+375 *
+380 *--------Table Definations----------------         
+420 TSMALL  TABLE        M1,30,10,20         ;SMALL SHIP TRANSIT TIME         
+430 TMEDIUM TABLE        M1,30,10,20         ;MEDIUM SHIP TRANSIT TIME         
+440 TLARGE  TABLE        M1,30,10,20         ;LARGE SHIP TRANSIT TIME 
+442 *******************************************
+443 *
+445 *--------Day Timer-----------------------------
+450         GENERATE     24                  ;ONE XACT EACH DAY         
+460         TERMINATE    1                   ;CLOCK TO OPERATE ONCE A DAY         
+470 *******************************************         
+480 *         
+490 *--------Tide Control----------------------         
+500         GENERATE     13,,5,1         
+510 AGAIN   LOGIC R      TIDE                ;CYCLING XACT TO MODEL TIDE         
+520         ADVANCE      3                   ;TIDE IS LOW FOR 3 HOURS         
+530         LOGIC S      TIDE                ;TIDE COMES IN         
+540         ADVANCE      10                  ;TIDE IS HIGH FOR 10 HOURS         
+550         TRANSFER     ,AGAIN              ;BRANCH BACK TO 'AGAIN'         
+560 *******************************************         
+570 *         
+590         GENERATE     26,FN$XPDIS         ;SHIPS ARRIVE EVERY 26 HOURS         
+600         TRANSFER     .500,,INTER         ;50 % ARE SMALL         
+620 *         
+630 *-------Characteristics of small ships are assigned to parameters--         
+640         ASSIGN       1,1                 ;ALL SMALL SHIPS ENTER HERE         
+650         ASSIGN       2,1                 ;CAPACITY P2=1  SMALL SHIP         
+660         ASSIGN       3,1                 ;QUEUE NUMBER 1 FOR SMALL SHIPS         
+670         ASSIGN       5,15                ;MEAN UNLOAD TIME         
+680         ASSIGN       6,24                ;MEAN LOAD TIME         
+690         ASSIGN       7,6                 ;LOAD TIME SPREAD         
+700         QUEUE        P3                  ;JOIN A QUEUE FOR SMALL SHIPS         
+710         TRANSFER     BOTH,PIER1,PIER2         
+712 *-------Assign Berth 1 When Available-------
+720 PIER1   GATE SNF     BERTH1         
+730         ASSIGN       4,1                 ;BERTH OBTAINED P4 =1,BERTH1
+735 *-------Move into Berth and Unload and Load---
+740 SMALL   ENTER        P4,P2               ;ENTER BERTH SHIP CAPACITY         
+750         DEPART       P3                  ;DEPART QUEUE         
+760         ADVANCE      P5,FN$XPDIS         ;UNLOAD TIME         
+770         ADVANCE      P6,P7               ;LOADING TIME         
+780         TEST E       P1,3,SKIPIT         ;A LARGE OR MEDIUM SHIP ?   
+785 *-------When Switch is Set, Tide is High
+790         GATE LS      TIDE                ;WAIT FOR TIDE         
+800 SKIPIT  LEAVE        P4,P2               ;LEAVE THE BERTH         
+810         TABULATE     P3                  ;TABULATE TRANSIT TIME         
+820         TERMINATE                        ;SHIP SAILS         
+830 ******************************************** 
+835 *-------Assign Berth 2 or Berth 3 when available(dependent
+836 *-------on the ship configuration
+840 PIER2   TEST E       BV$VAR1,1           ;SMALL SHIP TRIES 2 OR 3         
+850         TRANSFER     BOTH,BERT2,BERT3    ;TRY BERTH2 OR BERTH3         
+860 BERT2   TEST E       BV$VAR2,1           ;BERTH2 AVAILABLE ?         
+870         ASSIGN       4,2                 ;ENTERS BERTH2         
+880         TRANSFER     ,SMALL         
+890 BERT3   TEST E       BV$VAR3,1           ;BERTH3 AVAILABLE ?         
+900         ASSIGN       4,3                 ;GETS BERTH3         
+910         TRANSFER     ,SMALL         
+920 *         
+940 *-------Characteristics of medium ships are assigned to parameters--         
+950 INTER   TRANSFER     .400,,LARGE         ;20 % OF ALL SHIPS ARE LARGE         
+960         PRIORITY     2                   ;ALL MEDIUM SHIPS ENTER HERE         
+970         ASSIGN       1,2                 ;TYPE MEDIUM SHIP P1=2         
+980         ASSIGN       2,2                 ;CAPACITY OF SHIP P2=2         
+990         ASSIGN       3,2                 ;QUEUE NUMBER 2 FOR MEDIUM SHIPS         
+1000        ASSIGN       5,30                ;MEAN UNLOAD TIME         
+1010        ASSIGN       6,36                ;MEAN LOAD TIME         
+1020        ASSIGN       7,10                ;LOAD SPREAD TIME         
+1030        QUEUE        P3                  ;QUEUE P3=2  MEDIUM SHIP         
+1040        TRANSFER     BOTH,QUAY1,QUAY2         
+1050 QUAY1  TEST E       BV$VAR4,1           ;TRY FOR BERTH1         
+1060        ASSIGN       4,1                 ;GETS BERTH1         
+1070        TRANSFER     ,SMALL              ;TRANSFER FOR PROCESSING         
+1080 QUAY2  TEST E       BV$VAR5,1           ;TRY FOR BERTH 2 OR 3         
+1090        TRANSFER     BOTH,,QUAY3         ;TRY BERTH2 FIRST         
+1100        TEST E       BV$VAR6,1           ;IS BERTH2 AVAILABLE ?         
+1110        ASSIGN       4,2                 ;GETS BERTH2         
+1120        TRANSFER     ,SMALL              ;TRANSFER FOR PROCESSING         
+1130 QUAY3  TEST E       BV$VAR7,1           ;TRY FOR BERTH3         
+1140        ASSIGN       4,3                 ;GETS BERTH3         
+1150        TRANSFER     ,SMALL              ;TRANSFER FOR UNLOAD/LOAD         
+1160 *         
+1180 *-------Characteristics of large ships are assigned to parameters--         
+1190 LARGE  PRIORITY     3                   ;ALL LARGE SHIPS ENTER HERE         
+1200        ASSIGN       1,3                 ;TYPE SHIP P1=3, LARGE SHIP         
+1210        ASSIGN       2,4                 ;CAPACITY OF SHIP P2=4         
+1220        ASSIGN       3,3                 ;QUEUE NUMBER 3 FOR LARGE SHIPS         
+1230        ASSIGN       5,45                ;MEAN UNLOAD TIME         
+1240        ASSIGN       6,56                ;MEAN LOAD TIME         
+1250        ASSIGN       7,12                ;LOAD SPREAD TIME         
+1260        QUEUE        P3                  ;QUEUE FOR LARGE SHIPS         
+1270        TRANSFER     BOTH,FIRST,SECOND   ;TRY BERTH3 AND BERTH2         
+1280 FIRST  TEST E       BV$VAR8,1           ;TRY BERTH3 FIRST         
+1290        ASSIGN       4,3                 ;P4=3 MEANS ENTERED BERTH3         
+1300        TRANSFER     ,SMALL              ;TRANSFER FOR UNLOAD/LOAD         
+1310 SECOND TEST E       BV$VAR9,1           ;TRY BERTH2 SECOND         
+1320        ASSIGN       4,2                 ;P4=2 MEANS ENTERED BERTH2         
+1330        TRANSFER     ,SMALL              ;TRANSFER FOR UNLOAD/LOAD         
+1340 *******************************************         
+

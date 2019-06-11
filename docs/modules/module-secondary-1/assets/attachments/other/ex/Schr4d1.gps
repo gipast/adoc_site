@@ -1,0 +1,40 @@
+ ;  GPSS/PC Program file TMP1                05-22-1984   17:29:42
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+100 * Comparison of Alternate Queuing Systems in a Bank     
+105 *     
+110 *     
+115 *     First system     
+120 *     
+125 * Loc      Operation      A,B,C,D,E,F,G             Comments     
+130         SIMULATE         
+135 *     
+140 *       Function Definition(s)     
+145 *     
+150 XPDIS   FUNCTION    RN1,C24              ;Exponential Distribution Function
+0,0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69/.6,.915/.7,1.2/.75,1.38
+.8,1.6/.84,1.83/.88,2.12/.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2
+.97,3.5/.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7/.9998,8
+153 MEAN    FUNCTION    RN1,D5               ;Distribution of Mean Service Time
+.1,450/.29,750/.61,1000/.85,1500/1,3000
+155 *     
+160 *         Storage Capacity Definition(s)     
+165 *     
+170 TELRS   STORAGE     8                    ;Provide 8 Tellers     
+175 *     
+180 *        Model Segment 1     
+185 *     
+190         GENERATE    180,FN$XPDIS         ;Customers arrive     
+195         ASSIGN      1,FN$MEAN,XPDIS      ;Set P1 = Service Time     
+200         QUEUE       ONE                  ;Enter the line     
+205         ENTER       TELRS                ;Engage a teller     
+210         DEPART      ONE                  ;Leave the line     
+215         ADVANCE     P1                   ;Transact business     
+220         LEAVE       TELRS                ;Free the teller     
+225         TERMINATE                        ;Leave the bank     
+230 *     
+235 *       Model Segment 2     
+240 *     
+245         GENERATE    180000               ;Timer arrives after 5 hours     
+248         TERMINATE   1                    ;Shut off the run     
+250         REPORT      SCHR4D1     
+

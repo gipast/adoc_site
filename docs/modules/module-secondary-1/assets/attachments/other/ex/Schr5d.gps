@@ -1,0 +1,50 @@
+ ;  GPSS/PC Program file SCHR5D.TST                05-28-1984   17:59:21
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+100 *  A GAS STATION PROBLEM     
+105 *     
+110 *LOC  OPERATION    A,B,C,D,E,F,G      COMMENTS     
+115         SIMULATE         
+120 *     
+125 *      NON-STANDARD RANDOM NUMBER SEQUENCE INITIALIZATION(S)     
+130 *     
+135         RMULT       111                  ;Set random number sequence for 1s
+140 *     
+145 *      FUNCTION DEFINITION(S)     
+150 *     
+155 IAT     FUNCTION    RN1,C7               ;Inter-arrival time distribution
+0,0/.25,100/.48,200/.69,300/.81,400/.9,500/1,600
+165 STIME   FUNCTION    RN1,C7               ;Service time distribution     
+0,100/.06,200/.21,300/.48,400/.77,500/.93,600/1,700
+175 *     
+180 *      STORAGE CAPACITY DEFINITION(S)     
+185 *     
+190 STORE1  STORAGE     1                    ;Configure for 1-attendant case
+195 *     
+200 *  DEFINE VARIABLE(S)     
+205 *     
+210 NET     VARIABLE SC$STORE1-75-30#R$STORE1     
+215 *     
+220 *  MODEL SEGMENT 1     
+225 *     
+230         GENERATE    FN$IAT,,,,1          ;Cars approach station     
+235         GATE LR     LOCK                 ;Station open     
+240         ASSIGN      1,FN$STIME           ;Set P1 = latent service time
+245         TEST LE     Q1,STORE1,BYBYE      ;No. waiting <= no. in service?
+250 *                                         if not go bybye     
+255 GOIN    QUEUE       1                    ;Yes, get in line     
+260         ENTER       STORE1               ;Capture and attendant     
+265         DEPART      1                    ;Get out of line     
+270         PRIORITY    2                    ;Raise priority to resolve     
+275 *                                         potential arrival/departure tie     
+280         ADVANCE     P1                   ;Servicing proceeds     
+285 DONE    LEAVE       STORE1               ;Free the attendant     
+290 BYBYE   TERMINATE                        ;Leave the station     
+295 *     
+300 *  MODEL SEGMENT 2     
+305 *     
+310         GENERATE    43200                ;Closeup time, owner arrives     
+315         LOGIC S     LOCK                 ;Set 'not open' signal     
+320         TEST E      N$GOIN,N$DONE        ;Wait until last car is serviced
+325         SAVEVALUE   1,V$NET              ;Record day's net profit     
+330         TERMINATE   1                    ;Go home     
+

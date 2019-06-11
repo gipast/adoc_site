@@ -1,0 +1,41 @@
+ ;  GPSS/PC Program file B:SCHR4C.TST                04-29-1984   19:13:41
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+100 *    EQUIPMENT BALANCING PROBLEM
+105 *
+110 *LOC      OPERATION       A,B,C,D,E,F,G        COMMENTS
+115 *
+120 *      FUNCTION DEFINITION(S)
+125 *
+130 PROC1   FUNCTION    RN1,C5               ;TIME REQUIRED FOR PROCESS 1
+0,60/.12,70/.48,80/.83,90/1,100
+140 PROC2   FUNCTION    RN1,C4               ;TIME REQUIRED FOR PROCESS 2
+0,80/.24,90/.73,100/1,110
+150 *
+155 *      STORAGE CAPACITY DEFINITION(S)
+160 *
+165 BUSY    STORAGE     3                    ;INITIALLY 3 MACHINES, 1 CRANE
+168 CRANS   STORAGE     1
+170 *
+175 *      MODEL SEGMENT 1
+180 *
+185 BLOK1   GENERATE    ,,,3,1               ;BRING IN 1 OPERATOR PER MACHINE
+190         ENTER       BUSY                 ;ENTER BUSY STATUS
+195 CYCLE   ADVANCE     FN$PROC1             ;PROCESS 1 PROCEEDS
+200         LEAVE       BUSY                 ;LEAVE BUSY STATUS
+205         ENTER       CRANS                ;GET A CRANE
+210         ENTER       BUSY                 ;ENTER BUSY STATUS
+215         ADVANCE     15,5                 ;INTERMEDIATE HANDLING PROCEEDS
+220         LEAVE       CRANS                ;RELEASE THE CRANE
+225         PRIORITY    0                    ;SET LOW PRIORITY FOR NEXT CRANE
+230         ADVANCE     FN$PROC2             ;PROCESS 2 PROCEEDS
+235         LEAVE       BUSY                 ;LEAVE BUSY STATUS
+240         ENTER       CRANS                ;GET A CRANE
+245         ENTER       BUSY                 ;ENTER BUSY STATUS
+250         PRIORITY    1                    ;SET HIGH PRIORITY FOR NEXT CRANE
+255         ADVANCE     30,5                 ;UNLOAD;  STORE;  FETCH;  LOAD
+260         LEAVE       CRANS                ;RELEASE THE CRANE
+265         TRANSFER    ,CYCLE               ;GO DO PROCESS 1 ON NEXT CASTING
+270 *
+275         GENERATE    12000                ;TIMER ARRIVES AFTER 5 WEEKS
+280         TERMINATE   1                    ;SHUT OFF THE RUN
+

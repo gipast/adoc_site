@@ -1,0 +1,71 @@
+
+;      ASSEMBLY.GPS, by Gerard F. Cummings
+100 *******************************************
+110 *    ASSEMBLY OF MOTOR PUMP AND BASEPLATE *        
+120 *******************************************
+140 XPDIS   FUNCTION     RN1,C24          ;EXPONENTIAL FUNCTION
+0.0,0.0/0.1,.104/.2,.222/.3,.335/.4,.509/.5,.69
+.6,.915/.7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12
+.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2/.97,3.5
+.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7.0/.9997,8.0        
+150 *        
+160 SNORM   FUNCTION     RN1,C25          ;STANDARD NORMAL FUNCTION
+0.0,-5/0.00003,-4./.00135,-3.0/.00621,-2.5/.02275,-2./.06681,-1.5
+.11507,-1.2/.15866,-1./.21186,-.8/.27425,-.6/.34458,-.4/.42074,-.2
+.5,0.0/.57926,.2/.65542,.4/.72575,.6/.78814,.8/.84134,1/.88493,1.2
+.93319,1.5/.97725,2/0.99379,2.5/.99865,3/0.99997,4.0/1.0,5.0        
+170 TRANSIT TABLE        M1,200,200,20
+180 *****************************************        
+190         GENERATE     300,FN$XPDIS     ;NEW ORDER ARRIVES
+200         SPLIT        2,FACTORY,1      ;MAKE 2 COPIES OF ORIGINAL
+210 *****************************************        
+220 *      PURCHASE MOTOR          ORIGINAL XACT GOES HERE,P1=1
+230         QUEUE        MOTOR            ;QUEUE FOR MOTOR
+240         SEIZE        MOTOR            ;GET A FACILITY
+250         DEPART       MOTOR            ;DEPART THE QUEUE
+260         ADVANCE      200,100          ;WITHDRAW MOTOR FROM STOCK
+270         RELEASE      MOTOR            ;FREE THE FACILITY
+280         TRANSFER     ,TRYOUT          ;SEND TO TRIAL ASSEMBLY
+290 ***************************************        
+300 FACTORY TEST E       P1,2,BASEPLATE   ;IS P1=2 ?
+310         QUEUE        PUMPS            ;JOIN THE QUEUE (P1=2)
+320         SEIZE        PUMPS            ;GET A FACILITY
+330         DEPART       PUMPS            ;DEPART THE QUEUE
+340         ADVANCE      180,120          ;PREPARE THE PUMP
+350 PUMP    MATCH        PLATE            ;WAIT FOR BASEPLATE
+360         ADVANCE      50,10            ;CHECK PUMP ON BASEPLATE
+370         RELEASE      PUMPS            ;FREE THE FACILITY
+380         TRANSFER     ,TRYOUT          ;SEND FOR A TRYOUT
+390 ***************************************        
+400 BASEPLATE QUEUE      BASE             ;JOIN QUEUE,P1 MUST = 3
+410         SEIZE        BASE             ;GET A FACILITY
+420         DEPART       BASE             ;DEPART THE QUEUE
+430         ADVANCE      80,20            ;MAKE THE BASEPLATE
+440 PLATE   MATCH        PUMP             ;WAIT FOR PUMP UNIT
+450         ADVANCE      50,10            ;CHECK PUMP ON BASEPLATE
+460         RELEASE      BASE             ;FREE THE FACILITY
+470 ***************************************        
+480 TRYOUT  GATHER       3                ;GATHER 3 UNITS TO TRYOUT
+490         ADVANCE      60               ;TRIAL ASSEMBLY
+500         TEST E       P1,1,FINISH      ;IS IT THE MOTOR ?(P1=1)
+510 ***************************************        
+520         SEIZE        PAINT1           ;GET FIRST PAINT FACILITY
+530         ADVANCE      100,20           ;PAINT THE MOTOR
+540         RELEASE      PAINT1           ;FREE PAINT FACILITY 1
+550         TRANSFER     ,BUILD           ;SEND FOR ASSEMBLY
+560 ***************************************        
+570 FINISH  TEST E       P1,2,BASPLATE    ;IS IT THE PUMP ?(P1=2)
+580         SEIZE        PAINT2           ;GET PAINT FACILITY 2
+590         ADVANCE      120,30           ;PAINT THE PUMP
+600         RELEASE      PAINT2           ;FREE PAINT FACILITY 2
+610         TRANSFER     ,BUILD           ;SEND FOR ASSEMBLY
+620 BASPLATE SEIZE       GALVANIZE        ;GET A FACILITY
+630         ADVANCE      120,30           ;GALVANIZE BASEPLATE
+640         RELEASE      GALVANIZE        ;FREE THE FACILITY
+650 ***************************************        
+660 BUILD   ASSEMBLE     3                ;COLLECT 3 UNITS
+670         ADVANCE      150,30           ;ASSEMBLE  UNIT
+680         TABULATE     TRANSIT          ;RECORD TRANSIT TIME
+690         TERMINATE    1                ;ONE UNIT COMPLETED
+700         REPORT       ASSEMBLY.REP     ;ASSEMBLY OF MOTOR & PUMP
+

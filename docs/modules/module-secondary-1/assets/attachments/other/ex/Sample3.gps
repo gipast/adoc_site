@@ -1,0 +1,12 @@
+ ;  GPSS/PC program file C:SAMPLE3.GPS.  (V 2, # 10000)  04-07-1986 10:58:00
+20          GENERATE    300,100              ;Create next customer.
+30          QUEUE       BARBER               ;Begin queue time.
+40          SEIZE       BARBER               ;Own or wait for barber.
+50          DEPART      BARBER               ;End queue time.
+60          ADVANCE     600,200              ;Haircut takes a few minutes.
+70 ALTDEST  RELEASE     BARBER               ;Haircut done. Give up the barber.
+80          TERMINATE   1                    ;Customer leaves.
+plot q$barber,200,0,80000  ;Waiting line for Facility
+sta 200
+END
+

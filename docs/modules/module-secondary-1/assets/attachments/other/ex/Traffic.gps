@@ -1,0 +1,75 @@
+
+;      TRAFFIC.GPS, by Gerard F. Cummings
+100 **************************************************        
+110 *                                                *        
+120 *       TRAFFIC AT A T-JUNCTION                  *        
+130 **************************************************        
+140 *  ERLANG SERVICE TIMES  ...HYPEREXPONENTIAL ARRIVALS        
+170 *           TIME UNIT IS  1/100 SECOND           *        
+172 *
+173 *-------------------------------------------------
+175 *  A Hyperexponential Probability Distribution Follows
+180 HYPER   FVARIABLE    (410+((RN2'L'234)#(1343-410)))#FN$XPDIS        
+185 *  f(t) = .234(1/4.10) exp(-t/4.1) + .766(1/13.43) exp(-t/13.43)
+186 *-------------------------------------------------
+188 *
+190 AISLE   STORAGE      8        
+200 MERGETIME TABLE      MP2,100,100,20        
+210 CROSSTIME TABLE      MP1,100,100,20        
+220 TRANSIT TABLE        M1,1000,1000,9
+230 ARRIVALS TABLE       V$HYPER,200,200,20        
+240 XPDIS   FUNCTION     RN1,C24
+0.0,0.0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69
+.6,.915/.7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12
+.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2/.97,3.5
+.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7.0/.9997,8.0        
+250 **************************************************        
+320         GENERATE     V$HYPER,,300        ;HYPEREXPONENTIAL        
+330         QUEUE        FIRST        
+340         GATE SNF     AISLE               ;IS THERE ROOM IN THE AISLE ?        
+350         SEIZE        SOUTHLANE           ;CROSSES HIGHWAY
+360         DEPART       FIRST        
+370         MARK         1        
+375 * ---------Erlang Distribution-----------
+380         ADVANCE      90,FN$XPDIS         ;ERLANG K=4 WAITING TIME        
+390         ADVANCE      90,FN$XPDIS         ;MEAN = 360 TIME UNITS        
+400         ADVANCE      90,FN$XPDIS        
+410         ADVANCE      90,FN$XPDIS        
+415 * ---------------------------------------
+420         TABULATE     CROSSTIME           ;RECORD CROSSING TIME        
+430         ENTER        AISLE               ;STAND IN CENTER AISLE
+440         RELEASE      SOUTHLANE     
+450         QUEUE        TWO                 ;QUEUE FOR NORTHLANE
+460         SEIZE        NORTHLANE        
+470         DEPART       TWO        
+480         LEAVE        AISLE        
+490         MARK         2        
+495 * ---------Erlang Distribution-----------
+500         ADVANCE      80,FN$XPDIS         ;ERLANG K=5 WAITING TIME        
+510         ADVANCE      80,FN$XPDIS         ;MEAN = 400 TIME UNITS        
+520         ADVANCE      80,FN$XPDIS        
+530         ADVANCE      80,FN$XPDIS        
+540         ADVANCE      80,FN$XPDIS        
+545 * ---------------------------------------
+550         RELEASE      NORTHLANE        
+560         TABULATE     MERGETIME           ;MERGE TIME TO NORTH FLOW        
+570         TABULATE     TRANSIT        
+580         TABULATE     ARRIVALS        
+590         TERMINATE            
+600 ************************************************        
+610         GENERATE     5000,500,,,10       ;SOUTHBOUND TRAFFIC        
+620         SEIZE        SOUTHLANE        
+630         ADVANCE      1200,300            ;TIME TO PASS JUNCTION        
+640         RELEASE      SOUTHLANE        
+650         TERMINATE            
+655 ************************************************        
+660         GENERATE     6000,500,,,10       ;NORTHBOUND TRAFFIC        
+670         SEIZE        NORTHLANE        
+680         ADVANCE      1200,300            ;TIME TO PASS JUNCTION        
+690         RELEASE      NORTHLANE        
+700         TERMINATE            
+710 ************************************************        
+720         GENERATE     6000              ; XACT EVERY MINUTE       
+730         TERMINATE    1        
+740 ************************************************        
+

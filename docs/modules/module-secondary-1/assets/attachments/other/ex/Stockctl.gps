@@ -1,0 +1,85 @@
+
+ ;   STOCKCTL.GPS, by Gerard F. Cummings
+100 *******************************************************
+105 *                                                     *
+110 *   FACTORY  WAREHOUSE AND DISTRIBUTORS INVENTORY     *
+115 *******************************************************
+120         RMULT        94521         
+125         SIMULATE
+135 SNORM   FUNCTION     RN1,C25              ;STANDARD NORMAL FUNCTION
+0.0,-5/0.00003,-4./.00135,-3.0/.00621,-2.5/.02275,-2./.06681,-1.5
+.11507,-1.2/.15866,-1./.21186,-.8/.27425,-.6/.34458,-.4/.42074,-.2
+.5,0.0/.57926,.2/.65542,.4/.72575,.6/.78814,.8/.84134,1/.88493,1.2
+.93319,1.5/.97725,2/0.99379,2.5/.99865,3/0.99997,4.0/1.0,5.0         
+170 *          TIME UNIT IS ONE WEEK         *
+180         INITIAL      X1,3400             ;F.WAREHOUSE INVENTORY
+190         INITIAL      X2,2100             ;F.WAREHOUSE ORDER POINT
+200         INITIAL      X3,2300             ;F.WAREHOUSE ORDER QTY
+210         INITIAL      X$STOCK1,430        ;DIST 1  STOCK INITIAL         
+220         INITIAL      X$STOCK2,600        ;DIST 2  STOCK INITIAL         
+230         INITIAL      X$STOCK3,1000       ;DIST 3  STOCK INITIAL         
+240         INITIAL      X$EOQ1,115          ;ECONOMIC ORDER QTY 1         
+250         INITIAL      X$EOQ2,165          ;ECONOMIC ORDER QTY 2         
+260         INITIAL      X$EOQ3,200          ;ECONOMIC ORDER QTY 3         
+263         INITIAL      X$POINT1,240        ;ORDER POINT 1
+266         INITIAL      X$POINT2,430        ;ORDER POINT 2
+268         INITIAL      X$POINT3,630        ;ORDER POINT 3
+270 DEMAND1 VARIABLE     FN$SNORM#24+64         
+280 DEMAND2 VARIABLE     FN$SNORM#32+128         
+290 DEMAND3 VARIABLE     FN$SNORM#48+192         
+300 TOTAL   VARIABLE     P1+P2+P3         
+310 SALES   TABLE        X5,200,200,20
+320 REGION_1 TABLE       X$STOCK1,0,40,20         
+330 REGION_2 TABLE       X$STOCK2,0,40,20         
+340 REGION_3 TABLE       X$STOCK3,0,40,20         
+350 FACTORY  TABLE       X1,0,200,20
+370 **********************************************         
+380 *         REORDERING  BY  FACTORY  WAREHOUSE         
+390         GENERATE     ,,,1,2              ;ORDER POINT XACT
+400 BACKHERE TEST LE     X1,X2               ;FACTORY ORDER POINT ?         
+410         ADVANCE      4                   ;LEAD TIME IS 4 WEEKS         
+420         SAVEVALUE    1+,X3               ;INV INCREASE BY ORDER QTY         
+430         TRANSFER     ,BACKHERE           ;CYCLE XACT AROUND
+440 ************************************************         
+450 *          REORDERING  AT  EACH  OF  THE  DISTRIBUTORS         
+460         GENERATE     1,,,1               ;FIRST DISTRIBUTOR
+470 DISTR1  TEST L       X$STOCK1,X$POINT1   ;ORDER POINT REACHED ?         
+480         ADVANCE      1                   ;LEAD TIME = 1 WEEK
+485         SAVEVALUE    1-,X$EOQ1           ;WAREHOUSE SUPPLIES
+490         SAVEVALUE    STOCK1+,X$EOQ1      ;DISTR INVENT INCREASED
+500         TRANSFER     ,DISTR1             ;XACT FINISHED
+510         GENERATE     1,,,1               ;SECOND DISTRIBUTOR
+520 DISTR2  TEST L       X$STOCK2,X$POINT2   ;ORDER POINT REACHED ?         
+530         ADVANCE      1                   ;LEAD TIME = 1 WEEK
+535         SAVEVALUE    1-,X$EOQ2           ;WAREHOUSE SUPPLIES
+540         SAVEVALUE    STOCK2+,X$EOQ2      ;INVENTORY  INCREASED
+550         TRANSFER     ,DISTR2             ;CYCLE  XACT AROUND
+560         GENERATE     1,,,1               ;THIRD DISTR
+570 DISTR3  TEST L       X$STOCK3,X$POINT3   ;ORDER POINT REACHED ?         
+580         ADVANCE      1                   ;LEAD TIME = 1 WEEK
+585         SAVEVALUE    1-,X$EOQ3           ;WAREHOUSE SUPPLIES EOQ
+590         SAVEVALUE    STOCK3+,X$EOQ3      ;DISTR INVENT INCREASED
+600         TRANSFER     ,DISTR3             ;CYCLE  XACT  AROUND
+610 *************************************************         
+620 *          WEEKLY  DEMAND  AT  EACH  DISTRIBUTOR         
+630         GENERATE     1,,,,3              ;PRIORITY WEEKLY DEMAND         
+640         ASSIGN       1,V$DEMAND1         ;P1 = DEMAND DISTR ONE         
+650         ASSIGN       2,V$DEMAND2         ;P2 = DEMAND DISTR TWO         
+660         ASSIGN       3,V$DEMAND3         ;P3 = DEMAND DISTR THREE         
+670         SAVEVALUE    STOCK1-,P1          ;DISTR 1 WEEKLY DEMAND         
+680         SAVEVALUE    STOCK2-,P2          ;DISTR 2 WEEKLY DEMAND         
+690         SAVEVALUE    STOCK3-,P3          ;DISTR 3 WEEKLY DEMAND         
+700         SAVEVALUE    5+,V$TOTAL          ;ACCUMULATE TOTAL DEMAND         
+710         TABULATE     REGION_1            ;RECORD INVENT DISTR 1         
+720         TABULATE     REGION_2            ;RECORD INVENT DISTR 2         
+730         TABULATE     REGION_3            ;RECORD INVENT DISTR 3         
+740         TABULATE     FACTORY             ;FACTORY WAREHOUSE INVENTORY         
+750         TERMINATE    1         
+760 ********************************************         
+770 *         MONTHLY  RECORDING  OF  SALES         
+780         GENERATE     4,,,,1              ;LOW PRIORITY MONTHLY XACT   THLY
+790         TABULATE     SALES         
+800         SAVEVALUE    5,0                 ;RESET SALES = 0,EACH MONTH
+810         TERMINATE                        ;XACT  FINISHED
+820 ********************************************         
+

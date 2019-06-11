@@ -1,0 +1,58 @@
+ ;  GPSS/PC Program file SCHR6E.TST                06-17-1984   11:31:10
+1 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+10 *     
+20 *              Random Number Sequence Initialization     
+30 *     
+40          RMULT       111                  ;Set Random number Sequence     
+50 *     
+60 *               Function Definitions     
+70 *     
+80 IAT      FUNCTION    RN1,C7               ;Interarrival Time Distribution
+0,0/.25,100/.48,200/.69,300/.81,400/.9,500/1,600
+90 STIME    FUNCTION    RN1,C7               ;Service Time Distribution     
+0,100/.06,200/.21,300/.48,400/.77,500/.93,600/1,700
+100 *     
+110 *              Storage Capacity Definitions     
+120 *     
+125 STORE1  EQU 1     
+130 STORE1  STORAGE     1     
+132 *     
+135 STORE2  EQU 2     
+140 STORE2  STORAGE     2     
+142 *     
+145 STORE3  EQU 3     
+150 STORE3  STORAGE     3     
+160 *     
+170 *              Variable Definitions     
+180 *     
+190 NET     VARIABLE SC*1-75-30#R*1     
+200 *     
+210 *          Model Segment 1     
+220 *     
+230         GENERATE    FN$IAT,,,,1          ;Master Cars Approach     
+240         GATE LR     LOCK                 ;Stations Open?     
+250         ASSIGN      1,FN$STIME           ;Set p1 = Latent Service Time
+260         SPLIT       2,NEXT,2             ;Create 2 copies of Master     
+270 *                                         ;Serialize in Parameter 2     
+280 NEXT    TEST LE     Q*2,S*2,BYBYE        ;Each Car Tests Conditions at
+290 *                                         ;  Station then Stays or goes
+300 GOIN    QUEUE       P2                   ;Get in Line     
+310         ENTER       P2                   ;Capture Attendant     
+320         DEPART      P2                   ;Get out of line     
+330         PRIORITY    2                    ;Raise Priority     
+340 *                                         ; to Resolve potential tie     
+350         ADVANCE     P1                   ;Servicing Proceeds     
+360 DONE    LEAVE       P2                   ;Free the Attendant     
+370 BYBYE   TERMINATE                        ;Leave the Station     
+380 *     
+390 *              Model Segment 2     
+400 *     
+410         GENERATE    43200                ;Close. Owner Arrives     
+420         LOGIC S     LOCK                 ;Set "Not open" Signal     
+430         TEST E      N$GOIN,N$DONE        ;Wait 'til last car is     
+440 *                                         ;  Serviced at Station     
+450         SPLIT       2,AHEAD,1            ;Create 2 Copies of Owner     
+460 *                                         ;  Serialize in Parameter 1     
+470 AHEAD   SAVEVALUE   P1,V$NET             ;Record Net Profit for Station
+480         TERMINATE   1                    ;Go Home     
+

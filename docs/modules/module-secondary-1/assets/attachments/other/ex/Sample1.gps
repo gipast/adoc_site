@@ -1,0 +1,14 @@
+ ;  GPSS/PC Program file SAMPLE1.GPS                12-10-1983   09:02:52
+10 *************************************************************************
+12 *                                                                       *
+14 *                Barber Shop Simulation                                 *
+16 *                                                                       *
+18 *************************************************************************
+20          GENERATE    300,100              ;Create next customer.
+30          QUEUE       BARBER               ;Begin queue time.
+40          SEIZE       BARBER               ;Own or wait for barber.
+50          DEPART      BARBER               ;End queue time.
+60          ADVANCE     400,200              ;Haircut takes a few minutes.
+70          RELEASE     BARBER               ;Haircut done. Give up the barber.
+80          TERMINATE   1                    ;Customer leaves.
+

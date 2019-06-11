@@ -1,0 +1,92 @@
+ ;  GPSS/PC Program file B:SCHR5C.TST                04-30-1984   09:52:30
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+105 *    SIMULATION OF A PRODUCTION SHOP
+110 *
+115 *LOC   OPERATION    A,B,C,D,E,F,G      COMMENTS
+120         SIMULATE    
+122 *
+138 *
+139 *      FUNCTION DEFINITION(S)
+140 *
+141 GRUPS   FUNCTION    P1,D3                ;No. of machine groups each job ty
+1,4/2,3/3,5
+150 JTYPE   FUNCTION    RN1,D3               ;Distribution of job-types
+.24,1/.68,2/1,3
+155 TABNAMES FUNCTION   P1,D3                ;Conversion table for table names
+1,TAB1/2,TAB2/3,TAB3
+160 XPDIS      FUNCTION   RN1,C24
+0,0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69/.6,.915/.7,1.2/.75,1.38
+.8,1.6/.84,1.83/.88,2.12/.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2
+.97,3.5/.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7/.9998,8
+165 *
+170 *  MATRIX SAVEVALUE DECLARATION(S)/INITIALIZATION(S)
+175 *
+180 MAT1    MATRIX      ,3,5                 ;Matrix of visitation sequences
+181         INITIAL     MX$MAT1(1,1),STORE6
+182         INITIAL     MX$MAT1(1,2),STORE2
+183         INITIAL     MX$MAT1(1,3),STORE3
+184         INITIAL     MX$MAT1(1,4),STORE1
+190         INITIAL     MX$MAT1(2,1),STORE2
+192         INITIAL     MX$MAT1(2,2),STORE4
+193         INITIAL     MX$MAT1(2,3),STORE5
+194         INITIAL     MX$MAT1(3,1),STORE6
+195         INITIAL     MX$MAT1(3,2),STORE3
+196         INITIAL     MX$MAT1(3,3),STORE4
+197         INITIAL     MX$MAT1(3,4),STORE5
+200         INITIAL     MX$MAT1(3,5),STORE1
+205 *
+210 MAT2    MATRIX      ,3,5                 ;Matrix of mean machining times
+211         INITIAL     MX$MAT2(1,1),600
+212         INITIAL     MX$MAT2(1,2),200
+213         INITIAL     MX$MAT2(1,3),350
+214         INITIAL     MX$MAT2(1,4),1250
+220         INITIAL     MX$MAT2(2,1),650
+222         INITIAL     MX$MAT2(2,2),900
+223         INITIAL     MX$MAT2(2,3),1050
+224         INITIAL     MX$MAT2(3,1),250
+225         INITIAL     MX$MAT2(3,2),300
+226         INITIAL     MX$MAT2(3,3),500
+227         INITIAL     MX$MAT2(3,4),2500
+230         INITIAL     MX$MAT2(3,5),2350
+235 *
+240 *      STORAGE CAPACITY DEFINITION(S)
+245 *
+250 STORE1  STORAGE     14                   ;Provide 14, 5, and 3 machines
+252 STORE2  STORAGE     5
+254 STORE3  STORAGE     4
+255 *       groups 1, 2, 3, respectively
+260 STORE4  STORAGE     8                    ;Provide 8, 16 and 4 machines 
+262 STORE5  STORAGE     16
+263 STORE6  STORAGE     4
+269 *      groups 4, 5, and 6, respectively
+270 *
+275 *      TABLE DEFINITION(S)
+280 *
+285 TAB1    TABLE       M1,2400,2400,10          ;Shop residence time (type 1 )
+290 TAB2    TABLE       M1,2400,2400,10          ;Shop residence time (type 2 )
+295 TAB3    TABLE       M1,2400,2400,10          ;Shop residence time (type 3 )
+300 TJOBS   TABLE       V$COUNTER,10,10,5        ;Total jobs in shop
+305 *
+310 * VARIABLE DEFINITION(S)
+315 *
+320 COUNTER VARIABLE W$AAA+W$BBB+W$CCC
+325 *
+330 *      MODEL SEGMENT 1
+335 *
+340         GENERATE    96,FN$XPDIS          ;Jobs enter the shop
+345         ASSIGN      1,FN$JTYPE           ;Set P1 = job type
+350 AAA     ASSIGN      2,FN$GRUPS           ;Set P2 = no. of groups to visit
+355 NEXT    ENTER       MX$MAT1(P1,P2)           ;Capture machine in next group
+360 BBB     ADVANCE     MX$MAT2(P1,P2),FN$XPDIS  ;Machining operation proceeds
+365         LEAVE       MX$MAT1(P1,P2)           ;Release this machine
+370         ASSIGN      2-,1                 ;Update no. of groups yet to visit
+375 CCC     TEST E      P2,0,NEXT            ;Job done? If not, go to next grou
+380         TABULATE    FN$TABNAMES          ;Yes, record time spent in shop
+385         TERMINATE                        ;Leave the shop
+390 *
+395 *      MODEL SEGMENT 2
+400 *
+405         GENERATE    4800                 ;Timer arrives at end of each day
+410         TABULATE    TJOBS                ;Record no. of jobs now in the sho
+415         TERMINATE   1                    ;Decrement termination counter
+

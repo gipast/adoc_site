@@ -1,0 +1,25 @@
+:notitle:
+:author: Чикичев Тимур Вадимович
+:author_group: РК6-81
+:email: timur7002007@gmail.com
+:source-highlighter: pygments
+:pygments-style: monokai
+:stem: latexmath
+
+:toc-title: Содержание отчета
+:imagesdir-old: {imagesdir}
+
+:task_type: Домашнее задание
+:controller: Берчун Юрий Валерьевич
+:cource_name: Информационные модели систем массового обслуживания
+:var_num: 10
+:titul_dir: .
+
+:nofooter:
+
+:lab_postfix:
+
+// Nº {counter:lab_counter}
+
+:imagesdir: {titul_dir}/img
+include::{titul_dir}/titul.adoc[]

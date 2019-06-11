@@ -1,0 +1,24 @@
+ ;  GPSS/PC Program file B:SCHR4A.TST                04-24-1984   14:16:53
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+100 *
+105 *        Function Definitions
+110 *
+115 MEAN    FUNCTION    Q$WAIT,D4              ;Mean service time distribution
+0,330/2,300/5,270/6,240
+
+125 XPDIS   FUNCTION    RN1,C24
+0,0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69/.6,.915/.7,1.2/.75,1.38
+.8,1.6/.84,1.83/.88,2.12/.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2
+.97,3.5/.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7/.9998,8
+
+145 *
+150 *          Model Segment 1.
+155 *
+160         GENERATE    300,FN$XPDIS         ;Customers arrive.
+165         QUEUE       WAIT                 ;Enter the line
+170         SEIZE       SURVU                ;Capture the surver.
+175         DEPART      WAIT                 ;Leave the line
+180         ADVANCE     FN$MEAN,FN$XPDIS     ;Use the server
+185         RELEASE     SURVU                ;Free the server
+190         TERMINATE   1
+

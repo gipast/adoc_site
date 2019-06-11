@@ -1,0 +1,55 @@
+;  TEXTILE.GPS, by Gerard F. Cummings
+10 *******************************************        
+20 *                                         *        
+30 * PRODUCTION SYSTEM IN A TEXTILE FACTORY  *        
+35 *                                         *        
+40 *******************************************        
+60 REDUCERS STORAGE      5                   ;REPRESENTS 5 REDUCER FRAMES        
+70 SPINNERS STORAGE      40                  ;REPRESENTS 40 SPINNING FRAMES        
+80 WINDERS  STORAGE      8                   ;REPRESENTS 8 WINDING FRAMES        
+90 REDUCING TABLE        X$REDUCED,20,20,20  ;INVENTORY REDUCED MATERIAL        
+100 SPINNING TABLE       X$SPUN,20,20,20     ;INVENTORY SPUN MATERIAL        
+110 WINDING TABLE        X$WOUND,20,20,20    ;INVENTORY WOUND MATERIAL        
+120         INITIAL      X$REDUCED,50        
+130         INITIAL      X$SPUN,25        
+140         INITIAL      X$WOUND,25        
+145 ******************************************        
+150         GENERATE     20,,1               ;TIME UNIT IS A MINUTE        
+160         QUEUE        ONE                 ;ENTER QUEUE FOR REDUCING        
+170         ENTER        REDUCERS            ;GET A MACHINE        
+180         DEPART       ONE                 ;DEPART THE QUEUE        
+190         ADVANCE      38,2                ;PROCESS TIME        
+200         LEAVE        REDUCERS            ;LEAVE THE MACHINE        
+205 *-----------------------------------------        
+210         SAVEVALUE    REDUCED+,1          ;REDUCED INVENTORY UP BY  1        
+220         QUEUE        TWO                 ;QUEUE FOR SPINNING PROCESS        
+230         ENTER        SPINNERS            ;GET A SPINNING MACHINE        
+240         DEPART       TWO                 ;DEPART THE QUEUE        
+250         ADVANCE      320,20              ;PROCESS TIME        
+260         LEAVE        SPINNERS            ;FREE A MACHINE        
+270         SAVEVALUE    REDUCED-,1          ;REDUCED INVENTORY DOWN BY 1        
+275 *-----------------------------------------        
+280         SAVEVALUE    SPUN+,1             ;SPUN INVENTORY UP BY 1        
+290         QUEUE        THREE               ;QUEUE FOR WINDING PROCESS        
+300         ENTER        WINDERS             ;GET A WINDING MACHINE        
+310         DEPART       THREE               ;DEPART THE QUEUE        
+320         ADVANCE      64,4                ;PROCESS TIME        
+330         LEAVE        WINDERS             ;FREE A WINDING MACHINE        
+340         SAVEVALUE    SPUN-,1             ;SPUN INVENTORY DOWN BY 1        
+345 *-----------------------------------------        
+350         SAVEVALUE    WOUND+,1            ;WOUND INVENTORY UP BY 1        
+360         TERMINATE                        ;XACT IS FINISHED        
+365 ******************************************        
+370         GENERATE     480                 ;ONE XACT EVERY DAY (8 HOURS)        
+380         TABULATE     REDUCING            ;RECORD INVENTORY OF PROCESS        
+390         TABULATE     SPINNING            ;RECORD INVENTORY OF SPUN MATERIAL        
+400         TABULATE     WINDING             ;RECORD INVENT: OF WOUND MATERIAL        
+410         TERMINATE    1                   ;ONE DAY HAS PASSED        
+415 ******************************************        
+420         GENERATE     960                 ;A XACT EVERY 2 DAYS        
+425         TEST GE      X$WOUND,200,NOTTHERE  ;IF NOT DONE, DONT DISPATCH        
+430         SAVEVALUE    WOUND-,200          ;200 KGS PRODUCE DELIVERED        
+440         TERMINATE                        ;XACT IS FINISHED        
+445 NOTTHERE TERMINATE                       ;XACT IS FINISHED        
+450 ******************************************        
+

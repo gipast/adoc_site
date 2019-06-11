@@ -1,0 +1,56 @@
+ ;  GPSS/PC Program file SCHR3C.TST                05-28-1984   19:18:50
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+100 *     
+105 *         Non-standard random number sequence initializations for first run
+110 *     
+115         RMULT       511,39,7,663      
+120 *     
+125 *       Function definitions     
+130 *     
+135 IAT1    FUNCTION    RN1,C2               ;Category 1 mechanic inter-arrival
+0,60/1,781
+145 IAT2    FUNCTION    RN3,C2               ;Category 2 mechanic inter-arrival
+0,120/1,601
+155 STYM1   FUNCTION    RN2,C2               ;Category 1 mechanic service times
+0,210/1,391
+165 STYM2   FUNCTION    RN4,C2               ;Category 2 mechanic service times
+0,70/1,131
+175 *     
+180 *       Model segment 1     
+185 *     
+190 TAG1    GENERATE    FN$IAT1              ;Category 1 mechanics arrive     
+195         QUEUE       LINE                 ;Enter back of line     
+200         SEIZE       CLERK                ;Capture the clerk     
+205         DEPART      LINE                 ;Leave the line     
+210         ADVANCE     FN$STYM1             ;Use the clerk     
+215         RELEASE     CLERK                ;Free the clerk     
+220         TERMINATE                        ;Leave the tool crib area     
+225 *     
+230 *       Model segment 2     
+235 *     
+240 TAG2    GENERATE    FN$IAT2              ;Category 2 mechanics arrive     
+245         QUEUE       LINE                 ;Enter back of line     
+250         SEIZE       CLERK                ;Capture the clerk     
+255         DEPART      LINE                 ;Leave the line     
+260         ADVANCE     FN$STYM2             ;Use the clerk     
+265         RELEASE     CLERK                ;Free the clerk     
+270         TERMINATE                        ;Leave the tool crib area     
+275 *     
+280 *       Model segment 3     
+285 *     
+290         GENERATE    28800                ;Timer shuts off after 8 hours
+295         TERMINATE   1                    ;Shut off the run     
+300 *     
+305 *      Control cards     
+310 *     
+315         REPORT      SCHR3C1.REP          ;Run 1     
+320         START       1                    ;start first run     
+325         RMULT       741,211,483,659      ;Set random sequences for second r
+330         CLEAR                            ;Clear for second run     
+335         REPORT      SCHR3C2.REP          ;Run 2     
+340         START       1                    ;Start the second run     
+345         RMULT       111,157,539,211      ;Set random sequences for third ru
+350         CLEAR                            ;Clear for third run     
+355         REPORT      SCHR3C3.REP          ;Run 3     
+360         START       1                    ;Start the third run     
+

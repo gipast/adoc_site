@@ -1,0 +1,172 @@
+
+;      FMSMODEL.GPS, by Gerard F. Cummings
+100 *******************************************        
+110 *                                         *        
+120 *                                         *        
+130 *      AGV  MODEL IN FMS FACTORY          *        
+150 *            GPSS/PC PROGRAM              *        
+160 *******************************************        
+180         RMULT        71143
+190 XPDIS   FUNCTION     RN1,C24              ;EXPONENTIAL FUNCTION
+0.0,0.0/0.1,.104/.2,.222/.3,.335/.4,.509/.5,.69
+0.6,.915/.7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12
+0.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2/.97,3.5
+0.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7.0/.9997,8.0        
+200 *            TIME UNIT IS ONE SECOND
+210 TRANSIT TABLE        M1,4000,4000,8          ;TRANSIT TIME OF JOBS        
+220 *******************************************        
+230 *      P1 =1 MEANS MACHINE 1 IS REQ'D FIRST        
+240 *      P2 =2 MEANS    "    2  "   "     "        
+250 *      P3 =3 MEANS    "    3  "   "     "        
+260 TYPE    VARIABLE     RN1@16+1            ;CATAGORIES OF JOBS PROCESSED
+270 AGV     STORAGE      2        
+280 INSPECT FUNCTION     P4,L16
+1,1200/2,1350/3,1500/4,1650/5,1800/6,1950/7,2100/8,2250/9,2400/10,2550
+11,2700/12,2850/13,3000/14,3150/15,3300/16,3450        
+290 PRODUCT FUNCTION     P4,L16
+1,600/2,700/3,800/4,900/5,1000/6,1100/7,1200/8,1300/9,1400/10,1500
+11,1600/12,1700/13,1800/14,1900/15,2000/16,2100        
+300 MACH1   FUNCTION     RN1,D3
+.35,1/.80,2/1.0,3        
+310 ****************************************        
+320         GENERATE     720,60              ;XACTS ARE JOBS        
+325         QUEUE        ARRIVAL             ;ARRIVAL AREA QUEUE        
+330         ASSIGN       5,FN$MACH1          ;P5 IS AN INDEX TO MACHINES        
+332 *----Dummy values are put into parameters 1,2, and 3 so that they
+333 *----will be set up to receive the appropriate value in line 370.
+334 *----When and SNA is used to indicate the parameter number as in line 
+335 *----370, the parameter must already exist.
+340         ASSIGN       1,6                 ;DUMMY VALUE        
+350         ASSIGN       2,6                 ;DUMMY VALUE        
+360         ASSIGN       3,6                 ;DUMMY VALUE        
+365 *----The contents of parameter 5 is put into the parameter with the
+366 *----same number as the contents value(eg. If parameter 5 has a
+367 *----value of 3, a 3 is put into pararmeter 3 indicating processing
+368 *----should start on machine 3.
+370         ASSIGN       P5,P5               ;P1=1:P2=2: OR P3=3        
+380         ASSIGN       4,V$TYPE            ;P4 = COMPLEXITY OF JOB        
+390         ENTER        AGV                 ;GET AN AGV        
+400         SEIZE        ROBOT               ;GET ROBOT        
+410         ADVANCE      60                  ;TIME TO GET AN AGV        
+415         DEPART       ARRIVAL             ;DEPART ARRIVAL QUEUE        
+420         ADVANCE      45                  ;ROBOT LOAD JOB ON AGV        
+430         RELEASE      ROBOT               ;FREE THE ROBOT        
+440         SEIZE        1                   ;SEIZE SECTION 1 OF TRACK        
+450         ADVANCE      20                  ;20 SECONDS TO MOVE 10 M        
+460         RELEASE      1                   ;RELEASE SECTION 1        
+470         TEST E       P1,1,SKIPONE        ;MACHINE 1 REQ'D ?        
+480         TRANSFER     .10,,NEXT3          ;10 % ALSO GO TO MACHINE 3        
+490 FIRST   SEIZE        3                   ;SEIZE SECTION 3 OF TRACK        
+500         ADVANCE      20                  ;MOVE 10 METERS        
+510         LEAVE        AGV                 ;FREE AGV        
+520         QUEUE        ONE                 ;QUEUE FOR MACHINE 1        
+530         RELEASE      3                   ;RELEASE SECTION 3        
+540         SEIZE        MACHINE1            ;GET MACHINE 1        
+550         DEPART       ONE                 ;DEPART THE QUEUE        
+560         ADVANCE      FN$PRODUCT          ;MACHINING ON VERTICAL CNC        
+570         RELEASE      MACHINE1            ;MACHINING CENTER        
+580         QUEUE        WIPONE              ;JOIN WORK-IN-PROGRESS        
+590         ENTER        AGV                 ;GET AN AGV        
+600         ADVANCE      60                  ;TIME TO GET AN AGV        
+610         DEPART       WIPONE              ;DEPART WORK-IN-PROGRESS        
+620 ******************************************        
+630 SECOND  SEIZE        4                   ;GET SECTION 4 OF TRACK        
+640         ADVANCE      20                  ;10 SECONDS TO MOVE 10 M        
+650         RELEASE      4                   ;RELEASE SECTION 4        
+660         TEST E       P2,2,SKIPTWO        ;IS MACHINE 2 REQ'D        
+670         TRANSFER     .15,,NEXT4          ;15 % ALSO GO TO MACHINE 3        
+680 ANDTHREE SEIZE       6                   ;GET SECTION 6 OF TRACK        
+690         ADVANCE      20                  ;MOVE 10 METERS        
+700         LEAVE        AGV                 ;FREE THE AGV        
+710         QUEUE        TWO                 ;JOIN QUEUE TWO        
+720         RELEASE      6                   ;RELEASE SECTION 6        
+730         SEIZE        MACHINE2            ;GET MACHINE 2        
+740         DEPART       TWO                 ;DEPART QUEUE 2        
+750         ADVANCE      FN$PRODUCT          ;PROCESS ON HORIZONTAL        
+760         RELEASE      MACHINE2            ;CNC MACHINING CENTER        
+770         QUEUE        WIPTWO              ;QUEUE WORK-IN-PROCESS        
+780         ENTER        AGV                 ;GET AN AGV        
+790         ADVANCE      60                  ;TIME TO GET AN AGV        
+800         DEPART       WIPTWO              ;DEPART WORK-IN-PROGRESS        
+810 ******************************************        
+820 THIRD   TEST E       P3,3,SKIPTHREE      ;IS MACHINE 3 REQ'D ?        
+830         SEIZE        8                   ;SEIZE SECTION 8 OF TRACK        
+840         ADVANCE      20                  ;MOVE 10 METERS        
+850         LEAVE        AGV                 ;FREE AGV        
+860         QUEUE        THREE               ;JOIN QUEUE THREE        
+870         RELEASE      8                   ;RELEASE SECTION 8 OF TRACK        
+880         SEIZE        MACHINE3            ;GET MACHINE 3        
+890         DEPART       THREE               ;DEPART QUEUE THREE        
+900         ADVANCE      FN$PRODUCT          ;PROCESS ON CNC LATHE        
+910         RELEASE      MACHINE3            ;FREE TURNING CENTER        
+920         QUEUE        WIPTHREE            ;QUEUE WORK-IN-PROGRESS        
+930         ENTER        AGV                 ;GET AN AGV        
+940         ADVANCE      60                  ;TIME FOR AGV TO ARRIVE        
+950         DEPART       WIPTHREE            ;DEPART WORK-IN-PROGRESS        
+960 ******************************************        
+970 FOURTH  SEIZE        9                   ;SEIZE SECTION 9 OF TRACK        
+980         ADVANCE      20                  ;MOVE 10 METERS        
+990         RELEASE      9                   ;RELEASE SECTION 9        
+1000        TRANSFER     .960,,SKIPFOUR      ;4 % OF COMPONENTS INSPECTED        
+1010        SEIZE        11                  ;SEIZE SECTION 11 OF TRACK        
+1020        ADVANCE      20                  ;MOVE 10 METERS        
+1030        LEAVE        AGV                 ;FREE THE AGV        
+1040        QUEUE        FOUR                ;JOIN QUEUE FOUR        
+1050        RELEASE      11                  ;RELEASE SECTION 11 OF TRACK        
+1060        SEIZE        MACHINE4            ;GET MACHINE 4        
+1070        DEPART       FOUR                ;DEPART QUEUE 4        
+1080        ADVANCE      FN$INSPECT          ;INSPECTION ON 3-D MACHINE        
+1090        RELEASE      MACHINE4            ;RELEASE MACHINE 4        
+1100        QUEUE        WIPFOUR             ;JOIN WORK-IN-PROGRESS        
+1110        ENTER        AGV                 ;GET AN AGV        
+1120        ADVANCE      60                  ;TIME FOR AGV TO ARRIVE        
+1130        DEPART       WIPFOUR             ;DEPART WORK-IN-PROGRESS        
+1140 ******************************************        
+1150 FIFTH  SEIZE        12                  ;GET SECTION 12 OF TRACK        
+1160        ADVANCE      20                  ;MOVE 10 METERS        
+1170        RELEASE      12                  ;RELEASE SECTION 12        
+1180        SEIZE        ROBOT               ;GET A ROBOT        
+1190        ADVANCE      45                  ;ROBOT UNLOADS JOB FROM AGV        
+1200        RELEASE      ROBOT               ;FREE THE ROBOT        
+1205        TABULATE     TRANSIT             ;RECORD TRANSIT TIME        
+1210        SAVEVALUE    P4+,1               ;ONE JOB FINISHED        
+1220        SEIZE        13                  ;GET SECTION 13 OF TRACK        
+1230        ADVANCE      20                  ;RECIRCULATE AGV        
+1240        RELEASE      13                  ;FREE SECTION 13        
+1250        SEIZE        14                  ;GET SECTION 14 OF TRACK        
+1260        ADVANCE      20                  ;MOVE 10 METERS        
+1270        RELEASE      14                  ;FREE SECTION 14        
+1280        SEIZE        15                  ;GET SECTION 15 OF TRACK        
+1290        ADVANCE      20                  ;MOVE 10 METERS        
+1300        RELEASE      15                  ;FREE SECTION 15 OF TRACK        
+1310        LEAVE        AGV                 ;FREE AGV        
+1320        TERMINATE                        ;DESTROY XACT        
+1330 ******************************************        
+1340 NEXT3  ASSIGN       3,3                 ;10% USE MACHINE 1 AND 3        
+1350        TRANSFER     ,FIRST        
+1360 NEXT4  ASSIGN       3,3                 ;15% USE MACHINE 2 AND 3        
+1370        TRANSFER     ,ANDTHREE         
+1380 ******************************************        
+1390 SKIPONE SEIZE       2                   ;SEIZE SECTION 2 OF TRACK        
+1400        ADVANCE      20                  ;MOVE 10 METERS        
+1410        RELEASE      2                   ;FREE SECTION 2 OF TRACK        
+1420        TRANSFER     ,SECOND        
+1430 ******************************************        
+1440 SKIPTWO SEIZE       5                   ;GET SECTION 5 OF TRACK        
+1450        ADVANCE      20                  ;MOVE 10 METERS        
+1460        RELEASE      5                   ;FREE SECTION 5 OF TRACK        
+1470        TRANSFER     ,THIRD        
+1480 *****************************************        
+1490 SKIPTHREE SEIZE     7                   ;GET SECTION 7 OF TRACK        
+1500        ADVANCE      20                  ;MOVE 10 METERS        
+1510        RELEASE      7                   ;FREE SECTION 7 OF TRACK        
+1520        TRANSFER     ,FOURTH        
+1530 *****************************************        
+1540 SKIPFOUR SEIZE      10                  ;GET SECTION 10 OF TRACK        
+1550        ADVANCE      20                  ;MOVE 10 METERS        
+1560        RELEASE      10                  ;FREE SECTION 10 OF TRACK        
+1570        TRANSFER     ,FIFTH        
+1580 ******************************************        
+1590        GENERATE     28800               ;XACT EVERY DAY        
+1600        TERMINATE    1                   ;DESTROY TIMER XACT        
+

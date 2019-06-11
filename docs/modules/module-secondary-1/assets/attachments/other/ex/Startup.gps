@@ -1,0 +1,20 @@
+ ;  GPSS/PC program file STARTUP.GPS.  (V 2, # 10000)  7-18-1989 12:00:00
+*
+*
+*                 GPSS/PC(tm) Version 2, Student Version
+*
+*        THIS EDUCATIONAL VERSION RUNS MORE SLOWLY THAN THE COMMERCIAL
+*                VERSION AND IS LIMITED IN TOTAL MODEL SIZE.
+*
+*        The Student Version of GPSS/PC is intended only for instructional
+*     purposes. For this reason, it provides the full features of GPSS/PC
+*     except animation, HELP, swap out (DOS), and Session Journaling. All
+*     graphics windows except the Positions Window are supported, and a
+*     mouse or light pen is also supported as the pointing device. Similarly,
+*     the RESULT and ANOVA commands are fully supported. However,
+*     simulations are limited to 100 blocks and/or 20,000 bytes of memory.
+*     Since the Student Version is slower, you may have to allow wider
+*     interval estimates than usual.
+*
+*
+

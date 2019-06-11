@@ -1,0 +1,98 @@
+
+;      EXCHANGE.GPS, by Gerard F. Cummings
+100 ******************************************        
+110 *    PABX TELEPHONE SYSTEM MODEL          *        
+120 *****************************************        
+130         SIMULATE             
+170 XPDIS   FUNCTION     RN1,C24              ;EXPONENTIAL FUNCTION
+0.0,0.0/0.1,.104/.2,.222/.3,.335/.4,.509/.5,.69
+.6,.915/.7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12
+.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2/.97,3.5
+.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7.0/.9997,8.0        
+180 *        
+190 SNORM   FUNCTION     RN1,C25              ;STANDARD NORMAL FUNCTION
+0.0,-5/0.00003,-4./.00135,-3.0/.00621,-2.5/.02275,-2./.06681,-1.5
+.11507,-1.2/.15866,-1./.21186,-.8/.27425,-.6/.34458,-.4/.42074,-.2
+.5,0.0/.57926,.2/.65542,.4/.72575,.6/.78814,.8/.84134,1/.88493,1.2
+.93319,1.5/.97725,2/0.99379,2.5/.99865,3/0.99997,4.0/1.0,5.0        
+200 TRANSIT TABLE        M1,20,20,20
+210 *******************************************        
+220 EXTENSIONS STORAGE   200        
+230 EXTLINES STORAGE     30        
+240 INTLINES STORAGE     30        
+250 SIGNALS STORAGE      8        
+260 OPERATOR STORAGE     1        
+270         REPORT       EXCHANGE.REP        ;EXCH TELEPHONE SYSTEM
+280 *******************************************        
+290 *    DEFINE VARIABLES                     *        
+300 INTERNAL VARIABLE    1260/(1+R$EXTENSIONS)        
+310 EXTERNAL VARIABLE    2500/(R$EXTENSIONS+S$EXTENSIONS)        
+330 CALLTIME VARIABLE    (FN$SNORM#30)+150
+340 *        
+350 *TABLES FOR NO. OF CALLS IN PROGRESS        
+360 CALLSINT TABLE       S$INTLINES,2,2,20
+370 CALLSEXT TABLE       S$EXTLINES,2,2,20
+380 *******************************************        
+390 *  GENERATE CALLS ORIGINATING INTERNALLY        
+400         GENERATE     V$INTERNAL,FN$XPDIS,20    ;CALLS ORIGINATING INTERNALL        
+410         ENTER        EXTENSIONS          ;AN EXTENSION IS INVOLVED        
+420         QUEUE        INSIDE              ;QUEUE FOR SIGNAL UNIT        
+430         ENTER        SIGNALS             ;GET A SIGNALLING UNIT        
+440         DEPART       INSIDE              ;LEAVE THE QUEUE        
+450         ADVANCE      7,2                 ;TIME TO SIGNAL
+460         LEAVE        SIGNALS             ;LEAVE THE SIGNAL UNIT        
+470         TRANSFER     .333,,INTOUT        ;33% ARE INTERNAL TO EXTERNAL        
+480 *
+490 INTINT  TEST GE      R$INTLINES,1,BREAKOFF  ;TEST INTERNAL LINE AVAILABLE        
+500         ENTER        INTLINES            ;GET AN INTERNAL LINE        
+510         ADVANCE      4,1                 ;CHECK IF ENGAGED ?
+515         TRANSFER     .15,,BUSY           ;SOME EXTENSIONS ENGAGED        
+520 ALINE   ENTER        EXTENSIONS          ;ANOTHER EXTENSION INVOLVED        
+530         ADVANCE      6,2                 ;TIME TO RING EXTENSION
+540         TRANSFER     .2,,NOGOOD          ;20% NOT ANSWERED        
+550         ADVANCE      V$CALLTIME          ;CALL DURATION        
+560 NOGOOD  LEAVE        EXTENSIONS          ;LEAVE EXTENSION        
+570 BUSY    LEAVE        INTLINES            ;LEAVE INTERNAL LINE        
+580         TRANSFER     ,BREAKOFF        
+590 *
+600 *  MODEL INTERNAL TO EXTERNAL CALLS    *        
+610 INTOUT  TEST GE      R$EXTLINES,1,BREAKOFF ;IS AN EXTERNAL LINE AVAILABLE        
+620         ENTER        EXTLINES            ;GET AN EXTERNAL LINE        
+630         ADVANCE      4,1                 ;TIME TO CHECK IF ENGAGED
+640         TRANSFER     .200,,NOBODY        ;20% ARE ENGAGED        
+650         ADVANCE      6,2                 ;TIME TO ANSWER
+660         TRANSFER     .200,,NOBODY        ;20% DO NOT ANSWER        
+670         ADVANCE      V$CALLTIME          ;CALL DURATION        
+675         TABULATE     TRANSIT             ;RECORD TRANSIT TIME        
+680 NOBODY  LEAVE        EXTLINES            ;LEAVE EXTERNAL LINE        
+690 BREAKOFF LEAVE       EXTENSIONS          ;FREE THE EXTENSION        
+700         TERMINATE            
+710 ****************************************        
+720 *     PROCESS CALLS ORIGINATING EXTERNALLY *        
+730         GENERATE     V$EXTERNAL,FN$XPDIS     ;CALLS OF EXTERNAL ORIGIN        
+740         TEST GE      R$EXTLINES,1,NONEFREE  ;EXTERNAL LINE AVAILABLE ?        
+750         ENTER        EXTLINES            ;GET AN EXTERNAL LINE        
+760         QUEUE        OUTSIDER            ;QUEUE FOR OPERATOR        
+770         ENTER        OPERATOR            ;GET AN OPERATOR        
+780         DEPART       OUTSIDER            ;DEPART THE QUEUE        
+790         ADVANCE      9,3                 ;OPERATOR SERVICE
+800         LEAVE        OPERATOR            ;LEAVE THE OPERATOR        
+810         ADVANCE      4,1                 ;IS IT ENGAGED
+815         TRANSFER     .15,,ENGAGED        ;SOME EXTENSIONS ENGAGED        
+820         ENTER        EXTENSIONS          ;GET AN EXTENSION        
+830         ADVANCE      6,2                 ;TIME TO RING EXTENSION
+840         TRANSFER     .200,,NOPERSON      ;20 % NO ANSWER        
+850         ADVANCE      V$CALLTIME          ;CALL TIME        
+855         TABULATE     TRANSIT             ;RECORD TRANSIT TIME        
+860 NOPERSON LEAVE       EXTENSIONS          ;LEAVE EXTENSION        
+870 ENGAGED LEAVE        EXTLINES            ;LEAVE EXTERNAL LINE        
+880 NONEFREE TERMINATE           
+890 *****************************************        
+900         GENERATE     3600                ;TRANSACTION EVERY HOUR        
+910         TERMINATE    1                   ;TERMINATE TIMER XACT
+920         GENERATE     60                  ;ONE XACT EVERY MINUTE
+930         TABULATE     CALLSINT            ;NO. OF INTERNAL CALLS        
+940         TABULATE     CALLSEXT            ;NO. OF EXTERNAL CALLS        
+950         TERMINATE            
+960 *****************************************        
+

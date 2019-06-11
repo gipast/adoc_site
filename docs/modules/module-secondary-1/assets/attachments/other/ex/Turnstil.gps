@@ -1,0 +1,14 @@
+;      TURNSTIL.GPS, by Gerard F. Cummings
+10 **************************************************
+12 *                                                *
+14 *    TURNSTILE  PROGRAM  IN  GPSS/PC             *
+16 **************************************************
+20          GENERATE    7,7                  ;PEOPLE ARRIVE
+30          QUEUE       TURN                 ;ENTER QUEUE
+40          SEIZE       TURN                 ;ACQUIRE TURNSTILE
+50          DEPART      TURN                 ;DEPART THE QUEUE
+60          ADVANCE     5,3                  ;USE TURNSTILE
+70          RELEASE     TURN                 ;LEAVE TURNSTILE
+80          TERMINATE   1                    ;ONE SPECTATOR ENTERS
+90 **************************************************
+

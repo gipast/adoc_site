@@ -1,0 +1,54 @@
+ ;      QCONTROL.GPS, by Gerard F. Cummings
+100 ***********************************************        
+110 *                                             *        
+120 *     QUALITY CONTROL PROGRAM FOR GPSSPC      *        
+130 *                                             *        
+140 ***********************************************        
+150         RMULT        93211        
+160 *  Definitions        
+170 TRANSIT TABLE        M1,100,100,20          ;TRANSIT TIME        
+180 XPDIS   FUNCTION     RN1,C24              ;EXPONENTIAL FUNCTION
+0.0,0.0/0.1,.104/.2,.222/.3,.335/.4,.509/.5,.69
+.6,.915/.7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12
+.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2/.97,3.5
+.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7.0/.9997,8.0        
+190 *        
+200 SNORM   FUNCTION     RN1,C25              ;STANDARD NORMAL FUNCTION
+0.0,-5/0.00003,-4./.00135,-3.0/.00621,-2.5/.02275,-2./.06681,-1.5
+.11507,-1.2/.15866,-1./.21186,-.8/.27425,-.6/.34458,-.4/.42074,-.2
+.5,0.0/.57926,.2/.65542,.4/.72575,.6/.78814,.8/.84134,1/.88493,1.2
+.93319,1.5/.97725,2/0.99379,2.5/.99865,3/0.99997,4.0/1.0,5.0        
+210 THIRD   FVARIABLE    24+4#FN$SNORM        
+230 PROCESS FUNCTION     RN1,D7
+0,0/.05,10/.18,14/.34,21/.56,32/.85,38/1.0,45        
+240 **********************************************        
+250         GENERATE     30,FN$XPDIS        
+260         ASSIGN       1,FN$PROCESS        ;PROCESS TIME IN P1        
+270 STAGE1  SEIZE        MACHINE1        
+280         ADVANCE      P1                  ;PROCESS 1        
+290         RELEASE      MACHINE1        
+300         ADVANCE      2                   ;INSPECTION        
+310         TRANSFER     .200,,REWORK1       ;20 % NEED REWORK        
+320 *********************************************        
+330 STAGE2  SEIZE        MACHINE2        
+340         ADVANCE      15,6                ;PROCESS 2        
+350         RELEASE      MACHINE2        
+360         ADVANCE      2                   ;INSPECTION        
+370         TRANSFER     .150,,REWORK2       ;15 % NEED REWORK        
+380 *********************************************        
+390 STAGE3  SEIZE        MACHINE3        
+400         ADVANCE      V$THIRD             ;PROCESS 3        
+410         RELEASE      MACHINE3        
+420         ADVANCE      2                   ;INSPECTION 3        
+430         TRANSFER     .050,,REWORK3       ;5 % NEED REWORK        
+440         TABULATE     TRANSIT             ;RECORD TRANSIT TIME        
+450         TERMINATE    1        
+460 *********************************************        
+470 REWORK1 TRANSFER     .400,,STAGE1        
+480         TERMINATE            
+490 REWORK2 TRANSFER     .400,,STAGE2        
+500         TERMINATE            
+510 REWORK3 TRANSFER     .400,,STAGE3        
+520         TERMINATE            
+530         REPORT       QCON.RPT            ;QUALITY CONTROL MODEL        
+

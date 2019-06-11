@@ -1,0 +1,57 @@
+
+;      ROBOTFMS.GPS, by Gerard F. Cummings
+110 *************************************************        
+120 *     EXPERIMENTAL MANUFACTURING CELL           *        
+130 *     TWO CNC MACHINES AND ONE  ROBOT           *        
+140 *   ONE ARRIVAL AREA & ONE FINISHED PARTS AREA  *        
+150 *************************************************        
+155         RMULT        78863         
+160 XPDIS   FUNCTION     RN1,C24
+0.0,0.0/0.1,.104/.2,.222/.3,.335/.4,.509/.5,.69
+.6,.915/.7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12
+.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2/.97,3.5
+.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7.0/.9997,8.0         
+170 SNORM   FUNCTION     RN1,C25
+0.0,-5./.00003,-4./.00135,-3.0/.00621,-2.5/.02275,-2./.06681,-1.5
+.11507,-1.2/.15866,-1./.21186,-.8/.27425,-.6/.34458,-.4/.42074,-.2
+.5,0.0/.57926,.2/.65542,.4/.72575,.6/.78814,.8/.84134,1./.88493,1.2
+.93319,1.5/.97725,2./.99379,2.5/.99865,3./.99997,4.0/1.0,5.0         
+180 TRANSIT TABLE        M1,100,100,20          ;RECORD LEAD TIME         
+190 VAR1    VARIABLE     60+(10#FN$SNORM)         
+200 ************************************************         
+210         GENERATE     150,FN$XPDIS        ;A JOB ARRIVES         
+220         QUEUE        ONE                 ;ARRIVAL QUEUE         
+230         SEIZE        ROBOT               ;GET THE ROBOT         
+240         DEPART       ONE                 ;DEPART THE QUEUE         
+250         ADVANCE      8,1                 ;ROBOT GRIPS THE JOB         
+260         ADVANCE      6                   ;ROBOT MOVES TO MACHINE 1         
+270         ADVANCE      8,1                 ;ROBOT PLACES THE JOB         
+280         RELEASE      ROBOT               ;FREE THE ROBOT         
+290         QUEUE        TWO                 ;WAIT IN NEXT QUEUE         
+300         SEIZE        MACHINE1            ;GET FIRST MACHINE         
+310         DEPART       TWO                 ;DEPART THE QUEUE         
+320         ADVANCE      V$VAR1              ;PROCESS TIME         
+330         RELEASE      MACHINE1            ;FREE MACHINE 1         
+340         QUEUE        THREE               ;JOIN QUEUE FOR MACHINE 2         
+350         SEIZE        ROBOT               ;GET THE ROBOT         
+360         DEPART       THREE               ;DEPART THE QUEUE         
+370         ADVANCE      8,1                 ;ROBOT GRIPS PART         
+380         ADVANCE      7                   ;ROBOT MOVES TO MACHINE 2         
+390         ADVANCE      8,1                 ;ROBOT PLACES THE PART         
+400         RELEASE      ROBOT               ;FREE THE ROBOT         
+410         QUEUE        FOUR                ;JOIN QUEUE MACHINE 2         
+420         SEIZE        MACHINE2            ;GET MACHINE 2         
+430         DEPART       FOUR                ;DEPART THE QUEUE         
+440         ADVANCE      100,FN$XPDIS        ;PROCESS 2         
+450         RELEASE      MACHINE2            ;FREE MACHINE 2         
+460         QUEUE        FIVE                ;QUEUE FOR EXIT STATION         
+470         SEIZE        ROBOT               ;GET THE ROBOT         
+480         DEPART       FIVE                ;DEPART THE QUEUE         
+490         ADVANCE      8,1                 ;ROBOT GRIPS THE PART         
+500         ADVANCE      5                   ;ROBOT MOVES TO EXIT         
+510         ADVANCE      8,1                 ;ROBOT PLACES THE PART         
+520         RELEASE      ROBOT               ;FREE THE ROBOT         
+530         TABULATE     TRANSIT             ;TRANSIT TIME         
+540         TERMINATE    1                   ;JOB IS COMPLETED         
+550 ************************************************         
+

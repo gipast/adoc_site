@@ -1,0 +1,50 @@
+ ;  GPSS/PC Program file SCHR7A2.TST                05-27-1984   18:32:56
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+105 *         ANOTHER BANK MODEL     
+110 *     
+115 * LOC      Operation      A,B,C,D,E,F,G             Comments     
+125         SIMULATE         
+135 *     
+145 *       Function Definition(s)     
+155 *     
+158 MEAN    FUNCTION    RN1,D5               ;Distribution of Mean Service Time
+.1,450/.29,750/.61,1000/.85,1500/1,3000
+165 XPDIS   FUNCTION    RN1,C24              ;Exponential Distribution Function
+0,0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69/.6,.915/.7,1.2/.75,1.38
+.8,1.6/.84,1.83/.88,2.12/.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2
+.97,3.5/.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7/.9998,8
+215 *     
+225 *        Model Segment 1     
+235 *     
+415 *     
+425 *     Second system     
+435 *     
+445 * Loc         Operation     A,B,C,D,E,F,G          Comments     
+455         SIMULATE         
+465 *     
+475 *      Function Definition(s)     
+485 *     
+505 *     
+515 *         Model Segment 1     
+525 *     
+535         GENERATE    180,FN$XPDIS         ;Customers arrive
+545         ASSIGN      1,FN$MEAN,XPDIS      ;Set P1 = service time     
+555         PRIORITY    1                    ;Set high priority for later     
+565 *                                         Service -completion event     
+575         SELECT E    2,1,8,0,F,QUEUP      ;Is teller available?     
+585 LINE    QUEUE       P2                   ;Update segregated line data     
+595         QUEUE       10                   ;Update aggregate line data     
+605         SEIZE       P2                   ;Capture a teller     
+615         DEPART      10                   ;Update aggregate line data     
+625         DEPART      P2                   ;Update segregated line data     
+635         ADVANCE     P1                   ;Transact business     
+645         RELEASE     P2                   ;Free the teller     
+655         TERMINATE                        ;Leave the bank     
+665 QUEUP   SELECT MIN  2,1,8,,Q             ;Set P2 = number of shortest line
+675         TRANSFER    ,LINE                ;Go queue up     
+685 *     
+695 *     
+705 *     
+715         GENERATE    180000               ;Timer arrives after 5 hours     
+725         TERMINATE   1                    ;Shut off the run     
+

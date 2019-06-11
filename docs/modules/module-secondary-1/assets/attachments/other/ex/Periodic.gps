@@ -1,0 +1,39 @@
+ ;      PERIODIC.GPS, by Gerard F. Cummings
+100 *********************************************         
+110 *                                           *         
+120 *            GPSS/PC PROGRAM                *         
+130 *       PERIODIC REVIEW INVENTORY MODEL     *         
+140 *                                           *         
+150 *********************************************         
+160 *  Definitions of non block entities         
+165         RMULT        39941        
+170 STOCK   STORAGE      10000                ;WAREHOUSE CAN HOLD 10000         
+180 STOCK   TABLE        S$STOCK,100,100,20          ;TABLE FOR INVENTORY AMTS         
+190 ORDERQTY VARIABLE    TARGET-S$STOCK      ;ORDER QUANTITY         
+195 DEMAND  VARIABLE     RN1@24+40           ;DAILY DEMAND        
+200 TARGET  EQU          1000                ;INITIAL STOCK LEVEL         
+210 REORDER EQU          800                 ;REORDER POINT         
+220 *********************************************         
+225 *  The reorder process        
+230         GENERATE     5,,,,1              ;REVIEW XACT, PRIORITY=1         
+240         TEST L       S$STOCK,REORDER,SKIP  ;IS STOCK < REORDERPT        
+250         ASSIGN       2,V$ORDERQTY        ;PARAMETER 2(P2) =ORDER QUANTITY        
+260 CUSTWAIT ADVANCE     5                   ;LEAD TIME IS 5 DAYS        
+270         ENTER        STOCK,P2            ;STOCK INCREASES BY P2         
+280 SKIP    TERMINATE                        ;ORDERING XACT IS FINISHED        
+290 *********************************************         
+295 *  The daily demand decrements quantity on hand        
+300         GENERATE     1                   ;DAILY DEMAND TRANSACTION         
+310         ASSIGN       1,V$DEMAND          ;PARAMETER 1(P1) = DAILY DEMAND        
+320         TABULATE     STOCK               ;RECORD DAILY STOCK        
+330         TEST GE      S$STOCK,P1,STOCKOUT  ;CAN ORDER BE FILLED        
+340         LEAVE        STOCK,P1            ;REMOVE DEMAND FROM STOCK        
+350         TERMINATE    1                   ;DAILY TIMER         
+360 STOCKOUT TERMINATE   1                   ;DAILY TIMER        
+370 *********************************************         
+375 *  Initialize the inventory        
+380         GENERATE     ,,,1,10             ;SET INITIAL STOCK         
+390         ENTER        STOCK,TARGET        ;SET INITIAL STOCK LEVEL = TARGET        
+400         TERMINATE                        ;XACT IS TERMINATED        
+410 *********************************************         
+

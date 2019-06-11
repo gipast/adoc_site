@@ -1,0 +1,70 @@
+:notitle:
+:author: Чикичев Тимур Вадимович
+:email: timur7002007@gmail.com
+
+:blank: pass:[ +]
+// :numbered!:
+
+// :nofooter:
+
+[frame=none,grid=none, cols="1,3"]
+|===
+|
+image:mgtu_label.jpg[mgtu_label,150,150,role="right"]
+ ^.^s|Министерство образования и науки Российской Федерации +
+Федеральное государственное бюджетное образовательное учреждение
+высшего образования +
+«Московский государственный технический университет имени Н.Э. Баумана +
+(национальный исследовательский университет)»
+(МГТУ им. Н.Э. Баумана)
+|===
+'''
+[.center,width=80%,frame=none,grid=none, cols="1,4"]
+|===
+|ФАКУЛЬТЕТ +
+КАФЕДРА
+>|Робототехники и комплексной автоматизации +
+Системы автоматизированного проектирования (РК-6)
+|===
+
+{blank}
+
+[.lead.text-center]
+Отчет по лабораторной работе{lab_postfix}
+по курсу +
+«{cource_name}» +
+Вариант Nº {var_num}
+{blank}
+{blank}
+{blank}
+
+
+[.center,width=80%,frame=none,grid=none, cols="1,3"]
+|===
+|Студент +
+Группа +
+
+Преподаватель
+>| {author} +
+{author_group} +
+
+{controller}
+|===
+{blank}
+{blank}
+{blank}
+{blank}
+{blank}
+{blank}
+{blank}
+{blank}
+{blank}
+{blank}
+{blank}
+{blank}
+{blank}
+{blank}
+[.text-center]
+_Москва, 2019 г._
+
+<<<

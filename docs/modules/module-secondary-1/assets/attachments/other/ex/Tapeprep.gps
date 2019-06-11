@@ -1,0 +1,59 @@
+
+;      TAPEPREP.GPS, by Gerard F. Cummings
+100 **************************************************        
+110 *                                                *        
+120 *            COMPUTER  NUMERICAL  CONTROL        *        
+130 *      TAPE  PROGRAMMING, LOADING  AND EDITING   *        
+140 *                                                *        
+150 **************************************************        
+160 *      QUEUE DISCIPLINE  ---  SHORTEST PROCESSING TIME (SPT)        
+180         RMULT        66753        
+190 XPDIS   FUNCTION     RN1,C24              ;EXPONENTIAL FUNCTION
+0.0,0.0/0.1,.104/.2,.222/.3,.335/.4,.509/.5,.69
+.6,.915/.7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12
+.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2/.97,3.5
+.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7.0/.9997,8.0        
+200 **************************************************        
+210 *        P1 =   PROCESS TIME FOR PROGRAMMING        
+220 *        P2 =      "      "   "  PUNCHING        
+230 *        P3 =      "      "   "  EDITING        
+240 *        P4 =   SHORTEST PROCESSING TIME        
+250 *        P5 =   DUE  DATE        
+260 *        P6 =   LONGEST PROCESSING TIME        
+270 ***************************************************        
+275 SCHEDPARM EQU        4                   ;START WITH SHORT TIME PROC 1ST
+280 VAR1    VARIABLE     P1+P2+P3        
+290 VAR2    VARIABLE     P4+AC1+RN1@160+80        
+300 VAR3    VARIABLE     10000-P4        
+310 LATENESS VARIABLE    AC1-P5        
+320 TRANSIT TABLE        M1,100,100,20       ;TABULATE FLOW TIMES
+330 LATE    TABLE        V$LATENESS,-1000,200,20   ;LATENESS
+340 ***************************************************        
+350         GENERATE     120,FN$XPDIS        ;CREATE NEW ARRIVALS        
+360         ASSIGN       1,90,XPDIS          ;PROGRAMMING TIME
+370         ASSIGN       2,60,XPDIS          ;TAPE PUNCHING TIME
+380         ASSIGN       3,70,XPDIS          ;TAPE LOAD AND EDIT TIME        
+390         ASSIGN       4,V$VAR1            ;TOTAL PROCESSING TIME        
+400         ASSIGN       5,V$VAR2            ;DUE DATE TIME IN P5        
+410         ASSIGN       6,V$VAR3            ;LONGEST PROCESSING TIME        
+420         LINK         PROGRAM,P$SCHEDPARM,WRITE ;OVERALL SHORTEST TIME        
+430 WRITE   SEIZE        MANUSCRIPT        
+440         ADVANCE      P1                  ;PART PROGRAM TIME        
+450         RELEASE      MANUSCRIPT        
+460         UNLINK       PROGRAM,WRITE,1     ;UNLINK ONE XACT        
+470         LINK         TAPE,P$SCHEDPARM,PUNCH ;LINK INTO CHAIN        
+480 PUNCH   SEIZE        TAPEPUNCH        
+490         ADVANCE      P2                  ;PUNCHING TIME        
+500         RELEASE      TAPEPUNCH        
+510         UNLINK       TAPE,PUNCH,1        ;UNLINK ONE XACT        
+520         LINK         EDIT,P$SCHEDPARM,LOADEDIT ;LINK INTO CHAIN        
+530 LOADEDIT SEIZE       EDIT        
+540         ADVANCE      P3                  ;LOAD AND EDIT TIME        
+550         RELEASE      EDIT        
+560         UNLINK       EDIT,LOADEDIT,1     ;UNLINK ONE XACT        
+570 ***********************************************        
+580         TABULATE     LATE        
+590         TABULATE     TRANSIT        
+600         TERMINATE    1                   ;JOB LEAVES THE SHOP        
+610 ***********************************************        
+

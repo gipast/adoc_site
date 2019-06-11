@@ -1,0 +1,53 @@
+
+;      QTHEORY.GPS, by Gerard F. Cummings
+100 *******************************************         
+110 *                                         *         
+120 *       QUEUEING  THEORY  VERIFICATION    *         
+130 *                                         *         
+140 *            GPSS/PC PROGRAM              *         
+150 *******************************************         
+160         SIMULATE              
+180 *     TIME UNIT IS 1/100 OF A SECOND         
+190 XPDIS   FUNCTION     RN1,C24              ;EXPONENTIAL FUNCTION
+0.0,0.0/0.1,.104/.2,.222/.3,.335/.4,.509/.5,.69
+.6,.915/.7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12
+.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2/.97,3.5
+.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7.0/.9997,8.0         
+200 *         
+210 TRANSIT TABLE        M1,250,250,20         
+220 NUMBER  TABLE        Q$EXPON,0,1,20         
+230 QCONSTANT QTABLE     CONSTANT,200,200,20         
+240 QEXPON  QTABLE       EXPON,200,200,20         
+250 QERLANG QTABLE       ERLANG,200,200,20         
+260 ****************************************         
+270         GENERATE     500,FN$XPDIS        ;INTERARRIVAL  5 SECONDS         
+280         QUEUE        CONSTANT         
+290         SEIZE        FACILITY1         
+300         ADVANCE      300                 ;SERVICE CONSTANT 3 SECS         
+310         RELEASE      FACILITY1         
+320         DEPART       CONSTANT         
+330         TERMINATE             
+340 ****************************************         
+350         GENERATE     500,FN$XPDIS        ;INTERARRIVAL TIME  5 SECS         
+370         QUEUE        EXPON         
+380         SEIZE        FACILITY2         
+390         ADVANCE      300,FN$XPDIS        ;SERVICE TIME 3 SECS EXPON         
+400         RELEASE      FACILITY2         
+410         DEPART       EXPON         
+430         TABULATE     TRANSIT         
+440         TERMINATE             
+450 ****************************************         
+460         GENERATE     500,FN$XPDIS        ;INTERARRIVAL TIME 5 SECS        
+470         QUEUE        ERLANG         
+480         SEIZE        FACILITY3         
+490         ADVANCE      150,FN$XPDIS        ;ERLANG K=2 SERVICE 3SECS         
+500         ADVANCE      150,FN$XPDIS         
+510         RELEASE      FACILITY3         
+520         DEPART       ERLANG         
+530         TERMINATE             
+540 ****************************************         
+550         GENERATE     6000,FN$XPDIS       ;RANDOM SAMPLE, AVE. 1 PER MINUTE         
+560         TABULATE     NUMBER          
+570         TERMINATE    1         
+590 ***************************************         
+

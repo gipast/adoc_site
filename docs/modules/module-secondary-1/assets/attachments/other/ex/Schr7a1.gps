@@ -1,0 +1,42 @@
+ ;  GPSS/PC Program file SCHR7A1.TST                05-27-1984   18:18:43
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+105 *         ANOTHER BANK MODEL     
+110 *     
+115 * LOC      Operation      A,B,C,D,E,F,G             Comments     
+125         SIMULATE         
+135 *     
+145 *       Function Definition(s)     
+153 MEAN    FUNCTION    RN1,D5               ;Distribution of Mean Service Time
+.1,450/.29,750/.61,1000/.85,1500/1,3000
+155 *     
+165 XPDIS   FUNCTION    RN1,C24              ;Exponential Distribution Function
+0,0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69/.6,.915/.7,1.2/.75,1.38
+.8,1.6/.84,1.83/.88,2.12/.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2
+.97,3.5/.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7/.9998,8
+175 *     
+185 *         Storage Capacity Definition(s)     
+195 *     
+205 TELRS   STORAGE     8                    ;Provide 8 Tellers     
+215 *     
+225 *        Model Segment 1     
+235 *     
+245         GENERATE    180,FN$XPDIS,,,      ;Customers arrive     
+255         ASSIGN      1,FN$MEAN,XPDIS      ;Set P1 = Service Time     
+265         PRIORITY    1                    ;Set high priority for later     
+270 *                                           service -completion event     
+275         QUEUE       ONE                  ;Enter the line     
+280         GATE SNF    TELRS,WAIT           ;Is a teller available     
+290 GRAB    ENTER       TELRS                ;Yes capture a teller     
+300         DEPART      ONE                  ;Leave the line     
+310         ADVANCE     P1                   ;Transact business     
+320         LEAVE       TELRS                ;Free the teller     
+325         UNLINK      LINE,GRAB,1          ;Send next waiting customer     
+330 *                                           (if any) to capture     
+340         TERMINATE                        ;Leave the bank     
+350 WAIT    LINK        LINE,FIFO            ;No, go onto back of user chain
+355 *     
+365 *       Model Segment 2     
+375 *     
+385         GENERATE    180000               ;Timer arrives after 5 hours     
+395         TERMINATE   1                    ;Shut off the run     
+

@@ -1,0 +1,106 @@
+ ;  GPSS/PC Program file B:SCHR2E                04-16-1984   18:43:06
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+110         SIMULATE    
+120 *
+130 *         STORAGE CAPACITY DEFINITIONS
+140 *
+150 NOWON   STORAGE     50                   ;50 MACHINES MAX
+160 *
+170 *         MODEL SEGMENT 1
+180 *
+190 CNTRL   GENERATE    ,,,MACHINES          ;Provide 53 machines (3 rented)
+200 BACKPLACE ENTER     NOWON                ;Machine goes into production
+210         ADVANCE     157,25               ;Machine is running
+220         LEAVE       NOWON                ;Machine fails
+230         ENTER       MEN                  ;Capture repairman
+240         ADVANCE     7,3                  ;Machine is being repaired
+250         LEAVE       MEN                  ;Free the repairman
+260         TRANSFER    ,BACKPLACE           ;Go back to run again when needed
+270 *
+280 *       MODEL SEGMENT 2
+290 *
+300         GENERATE    DURATION             ;Timer
+310         TERMINATE   1                    ;shuts off the run
+320 *
+330 *        Control Cards
+340 *
+345 *
+350 *
+360 *       Duration is 3 years 
+340 *
+363 DURATION EQU 6240
+365 *
+367 *
+370 MACHINES EQU 53
+380 MEN     STORAGE     3                    ;3 Repair men
+390         REPORT      SCHR2E1.REP          ;3 rented machines, 3 repair men 
+410         START       1                    ;Start the first run
+420 *
+430 *
+440 *
+445         CLEAR                            ;Remove old transactions
+450 MACHINES EQU 54
+460 MEN     STORAGE     3                    ;3 Repair men
+470         REPORT      SCHR2E2.REP          ;4 rented machines, 3 repair men 
+490         START       1                    ;Start the second run
+500 *
+510 *
+520 *
+525         CLEAR                            ;Remove old transactions
+530 MACHINES EQU 55
+540 MEN     STORAGE     3                    ;3 Repair men
+550         REPORT      SCHR2E3.REP          ;5 rented machines, 3 repair men 
+570         START       1                    ;Start the third run
+580 *
+590 *
+600 *
+605         CLEAR                            ;Remove old transactions
+610 MACHINES EQU 53
+620 MEN     STORAGE     4                    ;4 Repair men
+630         REPORT      SCHR2E4.REP          ;3 rented machines, 4 repair men 
+650         START       1                    ;Start the fourth run
+660 *
+670 *
+680 *
+685         CLEAR                            ;Remove old transactions
+690 MACHINES EQU 54
+700 MEN     STORAGE     4                    ;4 Repair men
+710         REPORT      SCHR2E5.REP          ;4 rented machines, 4 repair men 
+730         START       1                    ;Start the fifth run
+740 *
+750 *
+760 *
+765         CLEAR                            ;Remove old transactions
+770 MACHINES EQU 55
+780 MEN     STORAGE     4                    ;4 Repair men
+790         REPORT      SCHR2E6.REP          ;5 rented machines, 4 repair men 
+810         START       1                    ;Start the sixth run
+820 *
+830 *
+840 *
+845         CLEAR                            ;Remove old transactions
+850 MACHINES EQU 53
+860 MEN     STORAGE     5                    ;5 Repair men
+870         REPORT      SCHR2E7.REP          ;3 rented machines, 5 repair men 
+890         START       1                    ;Start the seventh run
+900 *
+910 *
+920 *
+925         CLEAR                            ;Remove old transactions
+930 MACHINES EQU 54
+940 MEN     STORAGE     5                    ;5 Repair men
+950         REPORT      SCHR2E8.REP          ;4 rented machines, 5 repair men 
+970         START       1                    ;Start the eighth run
+980 *
+990 *
+1000 *
+1005        CLEAR                            ;Remove old transactions
+1010 MACHINES EQU 55
+1020 MEN    STORAGE     5                    ;5 Repair men
+1030        REPORT      SCHR2E9.REP          ;5 rented machines, 5 repair men 
+1050        START       1                    ;Start the ninth run
+1060 *
+1070 *
+1080 *
+1100        END         
+

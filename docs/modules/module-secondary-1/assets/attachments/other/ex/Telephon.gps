@@ -1,0 +1,25 @@
+
+;        TELEPHON.GPS, by Gerard F. Cummings
+100 *******************************************************       
+110 *                                                     *       
+120 *                                                     *       
+130 *        TELEPHONE SYSTEM MODEL                       *       
+140 *                                                     *       
+150 *                                                     *       
+160 *******************************************************       
+170 *    SIMPLE TELEPHONE SIMULATION                      *
+180 *       TIME UNIT IS ONE SECOND                       *
+190 *       GPSS/PC  PROGRAM                              *
+200 SETS    STORAGE      2         
+210 TRANSIT TABLE        M1,100,100,20         ;TRANSIT TIMES
+220         GENERATE     100,60              ;CALLS ARRIVE         
+230 AGAIN   GATE SNF     SETS,OCCUPIED       ;TRY FOR A LINE         
+240         ENTER        SETS                ;CONNECT CALL         
+250         ADVANCE      180,60              ;SPEAK FOR 3+/- 1 MIN         
+260         LEAVE        SETS                ;FREE A LINE         
+270         TABULATE     TRANSIT             ;TABULATE TRANSIT TIME         
+280         TERMINATE    1                   ;REMOVE A TRANSACTION         
+290 OCCUPIED ADVANCE     300,60              ;WAIT 5 MINUTES         
+300         TRANSFER     ,AGAIN              ;TRY AGAIN         
+310 *******************************************************
+

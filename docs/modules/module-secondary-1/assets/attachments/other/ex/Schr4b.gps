@@ -1,0 +1,50 @@
+ ;  GPSS/PC Program file TMP                06-19-1984   14:58:27
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+100 *LOC    OPERATION       A,B,C,D,E,F,G             COMMENTS     
+105         SIMULATE         
+106 CARTS   STORAGE     1000     
+110 *     
+115 *       FUNCTION DEFINITIONS(S)     
+120 *     
+125 AYL1    FUNCTION    RN1,C2     
+0,2/1,5
+135 AYL2    FUNCTION    RN1,C2     
+0,3/1,6
+145 AYL3    FUNCTION    RN1,C2     
+0,4/1,7   
+155 COTYM   FUNCTION    P1,C2     
+0,3/18,54
+165 IMPUL   FUNCTION    RN1,C2     
+0,1/1,4
+175 XPDIS   FUNCTION    RN1,C24     
+0,0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69/.6,.915/.7,1.2/.75,1.38
+.8,1.6/.84,1.83/.88,2.12/.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2
+.97,3.5/.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7/.9998,8
+180 *     
+185 *      MODEL SEGMENT 1     
+190 *     
+195         GENERATE    75,FN$XPDIS          ;SHOPPERS ARRIVE     
+200         ENTER       CARTS                ;TAKE A CART     
+205         TRANSFER    .25,,TRY2            ;WANT TO SHOP AISLE 1?     
+210         ADVANCE     120,60               ;TIME IN AISLE 1     
+215         ASSIGN      1,FN$AYL1            ;SET P1 = TOTAL ITEMS SELECTED
+220 TRY2    TRANSFER    .45,,TRY3            ;WANT TO SHOP AISLE 2?     
+225         ADVANCE     150,30               ;TIME IN AISLE 2     
+230         ASSIGN      1+,FN$AYL2           ;SET P1 = TOTAL ITEMS SELECTED
+235 TRY3    TRANSFER    .18,,OUT             ;WANT TO SHOP AISLE 3?     
+240         ADVANCE     120,45               ;TIME IN AISLE 3     
+245         ASSIGN      1+,FN$AYL3           ;SET P1 = TOTAL ITEMS SELECTED
+250 OUT     QUEUE       CHECKER              ;QUEUE FOR CHEKOUT     
+255         ASSIGN      1+,FN$IMPUL          ;ADD TO P1 ITEMS TAKEN ON IMPULSE
+260         SEIZE       CHECKER              ;CAPTURE THE CHECKER     
+265         DEPART      CHECKER              ;LEAVE THE CHECKOUT QUEUE     
+270         ADVANCE     FN$COTYM             ;CHECKOUT TIME     
+275         RELEASE     CHECKER              ;FREE THE CHECKER     
+280         LEAVE       CARTS                ;RETURN THE CART     
+285         TERMINATE                        ;LEAVE THE STORE     
+290 *     
+295 *      MODEL SEGMENT 2     
+300 *     
+305         GENERATE    28800                ;TIMER ARRIVES AT END OF 8-HOURS
+310         TERMINATE   1                    ;SHUT OFF THE RUN     
+

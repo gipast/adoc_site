@@ -1,0 +1,60 @@
+ ;  GPSS/PC Program file B:SCHR5B.TST                04-30-1984   08:36:45
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+100 *    A Problem in Inventory Control
+105 *
+110         SIMULATE    
+115 *
+120 *        Non-standard Random Number Sequence Initialization(s)
+125 *
+130         RMULT       11,33 
+135 *
+140 *        Function Definition(s)
+145 *
+150 LTIME   FUNCTION    RN2,D5               ;Replenishment lead-time dist.
+.05,6/.3,7/.6,8/.82,9/1,10
+160 SNORM   FUNCTION    RN1,C25              ;Standard Normal Distribution 
+0,-5/.00003,-4/.00135,-3/.00621,-2.5/.02275,-2
+.06681,-1.5/.11507,-1.2/.15866,-1/.21186,-.8/.27425,-.6
+.34458,-.4/.42074,-.2/.5,0/.57926,.2/.65542,.4
+.72575,.6/.78814,.8/.84134,1/.88493,1.2/.93319,1.5
+.97725,2/.99379,2.5/.99865,3/.99997,4/1,5
+190 *
+195 *       Savevalue Initialization(s)
+200 *
+205         INITIAL     X$ROP,80             ;Reorder point = 80 for 1st run
+210         INITIAL     X$ROQ,100            ;Reorder quantity=100 for 1st run
+215         INITIAL     X$STOCK,100          ;Initial Stock on hand = 100 units
+220 *
+225 *     Table Definition(s)
+230 *
+235 LOSES   TABLE       P2,0,1,17            ;Table for lost daily sales
+240 STOCK   TABLE       X$STOCK,0,10,12      ;Table for daily stock level
+245 *
+250 *        BVariable Definition(s)
+255 *
+260 DMND    FVARIABLE 2#FN$SNORM+10
+265 LOST    VARIABLE P1-X$STOCK
+270 *
+275 *    Model Segment 1
+280 *
+285         GENERATE    1,,,,1               ;Clerk comes each day
+290         ASSIGN      1,V$DMND             ;Set p1 = day's demand
+292         ASSIGN      2,0                  ;Assume loses are 0
+295         TEST GE     X$STOCK,P1,TRUBL     ;Can day's demand be met?
+300         SAVEVALUE   STOCK-,P1            ;Yes, deplete stock by day demand
+305 TAB1    TABULATE    STOCK                ;Record end-of-day stock level
+310         TABULATE    LOSES                ;Record day's lost demand (if any)
+315         TERMINATE   1                    ;Clerk goes home
+320 TRUBL   ASSIGN      2,V$LOST             ;no, set p2 = day's lost demand
+325         SAVEVALUE   STOCK,0              ;sold out, set stock= 0
+330         TRANSFER    ,TAB1                ;Go record day's experience
+335 *
+340 *     Model Segment 2
+345 *
+350         GENERATE    ,,,1                 ;Seed inventory control segment
+355 WATCH   TEST LE     X$STOCK,X$ROP        ;Is it time to place a
+360 *                                            replenishment order?
+365         ADVANCE     FN$LTIME             ;The order is on its way
+370         SAVEVALUE   STOCK+,X$ROQ         ;Order arrives, add Roq to stock
+375         TRANSFER    ,WATCH               ;Go back to watch
+

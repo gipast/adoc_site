@@ -1,0 +1,89 @@
+ ;  GPSS/PC Program file SCHR6A.TST                05-27-1984   16:56:10
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+105 *  OIL TANKER ACCOMODATION AT A PORT     
+110 *     
+115 * LOC  OPERATION      A,B,C,D,E,F,G      COMMENTS     
+120         SIMULATE         
+125 *     
+130 * FUNCTION DEFINITION(S)     
+135 *     
+140 MEAN    FUNCTION    P1,L4                ;Mean service time for tanker type
+1,18/2,24/3,36/4,21
+150 SPRED   FUNCTION    P1,L4                ;Service time spread for tanker ty
+1,2/2,3/3,4/4,3
+160 TYPE    FUNCTION    RN1,D3               ;Distribution of 'other tanker' ty
+.25,1/.8,2/1,3
+170 XPDIS   FUNCTION    RN1,C24     
+0,0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69/.6,.915/.7,1.2/.75,1.38
+.8,1.6/.84,1.83/.88,2.12/.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2
+.97,3.5/.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7/.9998,8
+175 *     
+180 *  STORAGE CAPACITY DEFINITION(S)     
+185 *     
+190 BERTH   STORAGE     3                    ;Provide 3 berths     
+195 *     
+200 TAB1    EQU 1     
+205 TAB2    EQU 2     
+210 TAB3    EQU 3     
+215 TAB4    EQU 4     
+216 TAB1    TABLE       M1,20,10,9           ;Port residence time, 'tanker type
+218 TAB2    TABLE       M1,20,10,9           ;Port residence time, 'tanker type
+219 TAB3    TABLE       M1,40,10,9           ;Port residence time, 'tanker type
+220 TAB4    TABLE       MP3,20,10,9          ;Port residence time, proposed tan
+222 *     
+225 *  VARIABLE DEFINITION(S)     
+230 *     
+235 GOIN    BVARIABLE (1-SF$BERTH)#(1-F$TUG)#(1-LS$STORM)     
+240 GOOUT   BVARIABLE (1-F$TUG)#(1-LS$STORM)     
+245 SPACE   VARIABLE 48#N$HERE     
+250 *     
+255 *  MODEL SEGMENT 1 (STORM GENERATING SEGMENT)     
+260 *     
+265         GENERATE    ,,,1                 ;Seed the storm segment     
+270 NEXT    ADVANCE     48,FN$XPDIS          ;Storm is on its way     
+275         LOGIC S     STORM                ;Storm arrives, set storm signal
+280         ADVANCE     4,2                  ;The storm is storming     
+285         LOGIC R     STORM                ;Storm is over, turn storm switch
+290         TRANSFER    ,NEXT                ;Go bring on the next storm     
+295 *     
+300 *  MODEL SEGMENT 2  (INITIALIZATION SEGMENT FOR PROPOSED TANKERS)     
+305 *     
+310         GENERATE    ,,,5                 ;Bring the proposed tankers into t
+315         ASSIGN      1,4                  ;Code proposed tankers with P1 val
+320 HERE    ADVANCE     V$SPACE              ;Space out times of their first po
+325         MARK        3                    ;Set P3 = arrival time at port
+330         TRANSFER    ,PORT                ;Jump into major model segment
+335 *     
+340 *  MODEL SEGMENT 3 (PORT ACTIVITIES, CYCLING OF PROPOSED TANKERS)     
+345 *     
+350         GENERATE    11,7                 ;'ther tankers' arrive at port
+355         ASSIGN      1,FN$TYPE            ;Set P1 = tanker-type code     
+360 PORT    TEST E      SF$BERTH,0           ;Wait until all ok for movement in
+361         TEST E      F$TUG,0              ;Wait until all ok for movement in
+362         TEST E      LS$STORM,0           ;Wait until all ok for movement in
+364         TRANSFER    SIM,,PORT      
+365         SEIZE       TUG                  ;Update tug status to 'busy'     
+370         ENTER       BERTH                ;Update berth status     
+375         ADVANCE     1                    ;Tanker is being moved into berth
+380         RELEASE     TUG                  ;Tug now no longer needed     
+385         ASSIGN      2,FN$SPRED           ;Set P2 = service time spread
+390         ADVANCE     FN$MEAN,P2           ;Tanker is being loaded     
+392 TRYLEAVE TEST E     F$TUG,0              ;Wait for tug     
+395         TEST E      LS$STORM,0           ;Wait until all is ok fro leaving
+399         TRANSFER    SIM,,TRYLEAVE      
+400         SEIZE       TUG                  ;Update tug status to 'busy'     
+405         ADVANCE     1                    ;Tanker is being moved out of bert
+410         RELEASE     TUG                  ;Tug is no longer needed     
+415         LEAVE       BERTH                ;Berth is now available for other
+420         TABULATE    P1                   ;Record residence time in port
+425         TEST NE     P1,4,CYCLE           ;Sieve out the proposed tankers
+430         TERMINATE                        ;'Other tankers' leave     
+435 CYCLE   ADVANCE     240,24               ;Proposed tankers make their round
+440         MARK        3                    ;Set P3 = time of return to port
+445         TRANSFER    ,PORT                ;Tanker is back at port     
+450 *     
+455 *  MODEL SEGMENT 4 (TIMER SEGMENT)     
+460 *     
+465         GENERATE    8760                 ;Timer arrives after 1 year     
+470         TERMINATE   1                    ;Shut off the run     
+

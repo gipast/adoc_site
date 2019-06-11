@@ -1,0 +1,45 @@
+ ;  GPSS/PC Program file SCHR3B.TST                04-23-1984   19:35:11
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+110 NUMBER  EQU 4
+120         SIMULATE    
+130 *
+140 *            Function definitions
+150 *
+152 *
+154 *    EXPONENTIAL DISTRIBUTION
+156 *
+158 XPDIS   FUNCTION    RN1,C24
+0,0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69/.6,.915/.7,1.2/.75,1.38
+.8,1.6/.84,1.83/.88,2.12/.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2
+.97,3.5/.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7/.9998,8
+
+210 *
+220 *            Model Segment 1
+230 *
+240         GENERATE    500,FN$XPDIS         ;Cars arrive
+250         TRANSFER    BOTH,,BYBYE          ;Leave if no room to wait
+260         ENTER       SPACE                ;Enter waiting area
+270         SEIZE       WASHR                ;Capture wash facility
+280         LEAVE       SPACE                ;Leave waiting area
+290         ADVANCE     400,FN$XPDIS         ;Car is being washed
+292         RELEASE     WASHR                ;Free the wash facility
+294 BYBYE   TERMINATE                        ;Leave the system
+300 *
+310 *          Model Segment 2
+320 *
+330         GENERATE    48000                ;Timer arrives at end of day
+340         TERMINATE   1                    ;Shut off the run
+350 *
+360 *     Control Statements
+370 *
+380 SPACE   STORAGE     1                    ;One Waiting Space
+385         REPORT      SCHR3B1.REP          ;One Waiting Space
+390         START       1                    ;Start the first run
+400         CLEAR
+480 SPACE   STORAGE     2                    ;Two Waiting Spaces
+485         REPORT      SCHR3B2.REP          ;Two Waiting Spaces
+490         START       1                    ;Start the second run
+500         CLEAR
+580 SPACE   STORAGE     3                    ;Three Waiting Spaces
+585         REPORT      SCHR3B3.REP          ;Three Waiting Spaces
+590         START       1                    ;Start the third run

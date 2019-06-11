@@ -1,0 +1,19 @@
+ ;  GPSS/PC program file C:SAMPLE9.GPS.  (V 2, # 10000)  04-07-1986 10:58:00
+1003 XPDIS  FUNCTION    RN1,C24              ;
+0,0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69/.6,.915/.7,1.2/.75,1.38
+.8,1.6/.84,1.83/.88,2.12/.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2
+.97,3.5/.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7/.9998,8
+1500 TABLE1 QTABLE      FACILITY,20,20,20          ;
+1600 POOL   STORAGE     10
+1800 MATRIX1 MATRIX ,5,5
+2000        GENERATE    100,FN$XPDIS, 
+2100        QUEUE       FACILITY 
+2106        ENTER       POOL
+2108        MSAVEVA     MATRIX1,2,2,C1
+2200 NXTBLK SEIZE       FACILITY             ;
+2400        ADVANCE     50,FN$XPDIS          ;
+2500        RELEASE     FACILITY             ;
+2540        LEAVE       POOL
+2600        DEPART      FACILITY 
+3000        TERMINATE   1                    ;
+

@@ -1,0 +1,41 @@
+ ;  GPSS/PC Program File EXPON.GPS.  (V 2, # 30104)  12-26-1989 11:52:13
+1000 *********************************************************        
+1030 *        
+1040 *   Negative Exponential Distribution in closed form.       
+1050 *            MU is the mean.
+1080 *        
+1082 *            Random Numbers are taken from a Random        
+1084 *              Number generator named EXPON.        
+1086 *        
+1090 **********************************************************        
+1092 *   You must use CLEAR OFF between simulation runs or
+1094 *   specifically initial the SAVEVALUE MU to your mean.
+1095 *   CLEAR alone will set all SAVEVALUES to 0.
+1097 *   
+1098 *   The normal truncation of traditional GPSS leads to
+1200 *   a negative bias of .5. You may want to add .5 to the
+1292 *   EXPONENTIAL FVARIABLE, or you could use finer time units
+1294 *   making truncation bias insignificant.
+1295 *
+1296 *   The argument to the LOG function is an approximation. The
+1297 *   fraction in the argument of the LOG function ranges from
+1299 *   1/1000 to 1000/1000 (0 would cause an Error Stop).
+1399 *   More accurate representations can be obtained
+1302 *   by using an argument, for example, of
+1306 *        ((1+1000#RN$EXPON1+RN$EXPON2)/1000000)
+1307 *   which ranges from 1/1000000 to 1000000/1000000). 
+1308 *   This, of course, will run somewhat slower.
+1320 *   
+1400        INITIAL      X$MU,10      ;  Mean is 10.
+2000 *        
+2100 EXPONENTIAL FVARIABLE  X$MU#(-LOG((1+RN$EXPON)/1000))
+2200 *        
+2250 ***********************************************************
+2300 *        
+2400 *    GPSS block which causes a delay taken from the Exponential        
+2500 *       Distribution.
+2600 *        
+2700 **************************************************************        
+3400          ADVANCE   V$EXPONENTIAL    ;DELAY FROM EXPONENTIAL DIST.        
+3500 ****************************************************************        
+

@@ -1,0 +1,20 @@
+
+
+
+
+Program LNUM-ADD
+
+
+The purpose of the program Lnum-add is to add line numbers to a GPSS model so
+
+that it can be used with GPSS/PC.  The GPSS model without line numbers must be
+
+in an ASCII file and the model with line numbers will also be in an ASCII file.
+
+The file names for the two GPSS models must be different.
+
+
+*Please note:  This program has been supplied by a user of GPSS/PC with
+               the hope that it will be useful to other users.
+	       It is supplied "as is" with no warranty of any kind.
+

@@ -1,0 +1,88 @@
+ ;  SUPERMRK.GPS, by Gerard F. Cummings
+100 ***************************************************         
+110 *                                                 *         
+120 *       SUPERMARKET SIMULATION MODEL IN GPSSPC    *         
+130 *                                                 *         
+140 ***************************************************         
+150         RMULT        1187         
+170 *               TIME UNIT = 1/10 OF A SECOND         
+210 XPDIS   FUNCTION     RN1,C24              ;EXPONENTIAL FUNCTION
+0.0,0.0/0.1,.104/.2,.222/.3,.335/.4,.509/.5,.69
+0.6,.915/.7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12
+0.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2/.97,3.5
+0.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7.0/.9997,8.0         
+220 QTY     VARIABLE     (RN1@96+5)         
+230 FINANCE VARIABLE     (RN1@3+1)#50+200         
+240 TRANSIT TABLE        M1,10000,10000,7          ;TIME IN THE SYSTEM         
+250 ITEMS   TABLE        P$QUANTITY,10,10,10          ;NO. OF ITEMS BOUGHT         
+260 BASKT   STORAGE      70         
+270 CART    STORAGE      650         
+280 PARK    STORAGE      650         
+290 CHECKOUT VARIABLE    (P$QUANTITY)#20+P$PAYMENT         
+300 TSHOP   VARIABLE     P$QUANTITY#100        
+310         INITIAL      X$CUSTOMERS,0         
+320 SHOPPERS TABLE       X$CUSTOMERS,100,50,12          ;NO. OF SHOPPERS         
+330 *********************************************         
+350 BEGIN   TRANSFER     BOTH,,LOST          ;TRIES TO PARK OR LEAVES         
+360         ENTER        PARK                ;PARK IN PARKING LOT         
+370         ADVANCE      600                 ;TIME TO WALK FROM CAR         
+380         SAVEVALUE    CUSTOMERS+,1        ;ONE MORE CUSTOMER         
+390         ASSIGN       QUANTITY,V$QTY      ;PARAM QUANTITY = NO. ITEMS BOUGHT         
+400         ASSIGN       PAYMENT,V$FINANCE   ;PARAM PAYMENT = METHOD PAYMENT        
+410         TEST LE      P$QUANTITY,10,QCART ;ITEMS >10 GET CART         
+420         GATE SNF     BASKT,QCART         ;CHECK BASKET AVAILABLE         
+430         QUEUE        BASKET              ;QUEUE FOR A BASKET         
+440         ENTER        BASKT               ;GET A BASKET         
+450         DEPART       BASKET              ;LEAVE QUEUE         
+460         ASSIGN       CARRIER,BASKT       ;PARAM CARRIER ASSIGNED BASKT         
+470         TRANSFER     ,SHOP               ;PROCEED TO SHOP         
+480 *--------------------------------------------
+490 QCART   QUEUE        CARTS               ;QUEUE FOR A CART         
+500         ENTER        CART                ;GET A CART         
+510         DEPART       CARTS               ;DEPART CARTS QUEUE         
+520         ASSIGN       CARRIER,CART        ;PARAM CARRIER ASSIGNED CART         
+530 SHOP    ADVANCE      V$TSHOP             ;SHOPPING TIME ELAPSES         
+540         TEST LE      P$QUANTITY,10,NORMAL  ;ITEMS < 10 GO TO EXPRESS         
+550         COUNT L      WHERE,4,20,1,Q      ;ANY EMPTY CHECKOUTS ?         
+560         TEST E       P$WHERE,0,NORMAL    ;SOME EMPTY CHEKOUTS ?         
+570         QUEUE        XPRESS              ;QUEUE AT EXPRESS         
+580         SEIZE        XPRES               ;GET EXPRESS CHECKOUT         
+590         DEPART       XPRESS              ;DEPART EXPRESS QUEUE         
+600         ADVANCE      V$CHECKOUT          ;CHECKOUT TIME         
+610         RELEASE      XPRES               ;FREE EXPRESS CHECKOUT         
+620         LEAVE        P$CARRIER           ;LEAVE THE BASKET         
+630         TRANSFER     ,EXIT         
+640 *--------------------------------------------
+650 NORMAL  SELECT MIN   MINQUE,4,20,,Q      ;FIND MINIMUM QUEUE         
+660         QUEUE        P$MINQUE            ;JOIN THE MIN QUEUE         
+670         SEIZE        P$MINQUE            ;GET THE CHECKOUT         
+680         DEPART       P$MINQUE            ;DEPART THE QUEUE         
+690         ADVANCE      V$CHECKOUT          ;CHECKOUT TIME         
+700         RELEASE      P$MINQUE            ;FREE THE CHECKOUT         
+710         LEAVE        P$CARRIER           ;LEAVE THE CART         
+720 EXIT    TABULATE     TRANSIT             ;RECORD TRANSIT TIME         
+730         TABULATE     ITEMS               ;RECORD ITEMS BOUGHT         
+740         SAVEVALUE    CUSTOMERS-,1        ;ONE CUSTOMERS LEAVES         
+750         ADVANCE      600                 ;WALK TO THE CAR         
+760         LEAVE        PARK                ;LEAVE THE CAR PARK         
+770         TERMINATE             
+780 LOST    TERMINATE                        ;ONE CUSTOMER LOST         
+790 *********************************************         
+792 *    Arrivals for 0 - 30 min.
+795         GENERATE     60,FN$XPDIS,,300    ;A CUSTOMER ARRIVES         
+798         TRANSFER     ,BEGIN         
+799 *    Arrivals for 30 - 90 min.
+800         GENERATE     40,FN$XPDIS,18000,900   ;ARRIVAL RATE AFTER .5 HRAN HO         
+810         TRANSFER     ,BEGIN         
+815 *    Arrivals for 90 - 150 min.
+820         GENERATE     80,FN$XPDIS,54000,450   ;ARRIVAL RATE AFTER 1.5HR         
+830         TRANSFER     ,BEGIN         
+832 *    Arrivals for 150 min +
+840         GENERATE     120,FN$XPDIS,90000    ;ARRIVAL RATE AFTER 2.5 HRS         
+850         TRANSFER     ,BEGIN         
+855 *********************************************         
+860         GENERATE     600                 ;XAC EACH MINUTE         
+870         TABULATE     SHOPPERS            ;RECORD NO. OF CUSTOMERS         
+880         TERMINATE    1         
+890 *********************************************         
+

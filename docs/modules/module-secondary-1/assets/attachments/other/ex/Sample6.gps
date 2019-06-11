@@ -1,0 +1,29 @@
+ ;  GPSS/PC program file C:SAMPLE6.GPS.  (V 2, # 10000)  04-07-1986 10:58:00
+5 DURATION  EQU 400     
+6 TIMECODE  VARIABLE    C1+1000000
+7 FUNC1     FUNCTION    RN1,D2
+.7,TELLER1/1,TELLER2
+10 *************************************************************************
+12 *                                                                       *
+14 *                Bank   Simulation                                      *
+16 *                                                                       *
+18 *************************************************************************
+20          GENERATE    300,100              ;Create next customer.     
+25          ASSIGN      1,FN$FUNC1
+30          QUEUE       P1                   ;Begin queue time.     
+40          SEIZE       P1                   ;Own or wait for teller.     
+50          DEPART      P1                   ;End queue time.     
+60          ADVANCE     DURATION,10          ;Do the transaction.     
+70          RELEASE     P1                   ;Give up the teller.
+80          TERMINATE                        ;Customer leaves.     
+110 *************************************************************************
+112 *                                                                       *
+114 *               Segment 2                                               *
+116 *                                                                       *
+118 *************************************************************************
+120        GENERATE     3600                  ;Take stats every hour
+130        SAVEVALUE    C1,Q$TELLER1          ;Trace queue at teller1
+135        SAVEVALUE    V$TIMECODE,Q$TELLER2  ;Trace queue at teller2
+140        TERMINATE    1                     ;Another hour has passed
+150        START        8                     ;Simulate an 8 hour day
+

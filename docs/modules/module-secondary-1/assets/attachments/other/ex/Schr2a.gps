@@ -1,0 +1,19 @@
+ ;  GPSS/PC Program file B:SCHR2A                04-09-1984   13:19:11
+1 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+5           SIMULATE
+10 *
+20 *            Model Segment 1
+30 *
+40          GENERATE    18,6                 ;Customers Arrive
+45          QUEUE       JOEQ                 ;Enter the line
+50          SEIZE       JOE                  ;Capture the Barber
+60          DEPART      JOEQ                 ;Leave the Line
+70          ADVANCE     16,4                 ;Get haircut
+80          RELEASE     JOE                  ;Free the barber
+90          TERMINATE                        ;Leave the shop
+100 *
+110 *          Model Segment 2
+120 *
+130         GENERATE    480                  ;Timer arrives at time 480
+140         TERMINATE   1                    ;Shut off the run
+

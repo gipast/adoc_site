@@ -1,0 +1,40 @@
+;    OILDEPOT.GPS,  by Gerard F. Cummings
+100 ************************************************        
+110 *     OIL STORAGE AND DISTRIBUTION DEPOT      *        
+120 *              GPSS/PC PROGRAM                *        
+130 ***********************************************        
+145         RMULT        5631,39941          
+148 *                TIME UNIT IS ONE MINUTE        
+150 ARR     FUNCTION     RN2,C5              ;ARRIVALS FREQUENCY
+0,0/0.2,.45/.6,1/.85,1.5/1.0,2        
+160 PUMPRATE FUNCTION    P2,L3               ;MINS TO PUMP 1000 GALS
+1,6/2,5/3,7        
+170 GALS    VARIABLE     (RN1@201+300)#10        
+180 TYPE    VARIABLE     RN1@3+1        
+190 PUMP    VARIABLE     (FN$PUMPRATE#P1)/1000+S$DEPOT/2+2        
+200 DEPOT   STORAGE      12                  ;ROOM FOR 12 TRUCKS MAXIMUM        
+210 TRANSIT TABLE        M1,10,10,20          ;TIME OF TRUCK IN DEPOT        
+220 QTY     TABLE        X1,20000,20000,9          ;QTY OF OIL SOLD PER DAY        
+230 *******************************************        
+240         GENERATE     18,FN$ARR           ;TRUCK ARRIVALS        
+250         ASSIGN       1,V$GALS            ;P1=NUMBER OF GALLONS        
+260         ASSIGN       2,V$TYPE            ;P2=TYPE OF OIL        
+270         ENTER        DEPOT               ;TRUCK ENTERS DEPOT        
+280         QUEUE        P2                  ;QUEUE FOR TYPE OF OIL        
+290         SEIZE        P2                  ;GET A PUMP        
+300         DEPART       P2                  ;DEPART THE QUEUE        
+310         ADVANCE      V$PUMP              ;SERVICE TIME PUMPING        
+320         RELEASE      P2                  ;RELEASE THE PUMP        
+330         LEAVE        DEPOT               ;TRUCK LEAVES DEPOT        
+340         SAVEVALUE    1+,P1               ;TALLY NO. OF GALS SOLD        
+350         TABULATE     TRANSIT             ;TABLE TRANSIT TIMES        
+360         TERMINATE                        ;TRUCK DEPARTS        
+370 ********************************************        
+380         GENERATE     480                 ;ONE TRANSACTION PER DAY        
+390         TABULATE     QTY                 ;RECORD NO OF GALLONS SOLD        
+400         SAVEVALUE    2+,X1               ;RECORD TOTAL OIL SOLD        
+410         SAVEVALUE    1,0                 ;SAVEVALUE SET TO ZERO        
+420         TERMINATE    1                   ;ONE DAY HAS PASSED        
+430         REPORT       OILDEPOT.REP        ;OIL DEPOT SIMULATION        
+440 ********************************************        
+

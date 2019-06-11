@@ -1,0 +1,30 @@
+ ;  GPSS/PC Program file B:SCHR2C                04-14-1984   09:51:39
+1 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+5           SIMULATE    
+10 *
+20 *            Model Segment 1
+30 *
+40          GENERATE    420,360,,,1          ;Category 1 mechanics arrive
+45          QUEUE       LINE                 ;Enter Category 1 segment of line
+50          SEIZE       CLERK                ;Capture the clerk
+60          DEPART      LINE                 ;Leave the line
+70          ADVANCE     300,90               ;Use the clerk
+80          RELEASE     CLERK                ;Free the clerk
+90          TERMINATE                        ;Leave the tool crib area
+100 *
+110 *          Model Segment 2
+120 *
+140         GENERATE    360,240,,,2          ;Category 2 mechanics arrive
+145         QUEUE       LINE                 ;Enter Category 2 segment of line
+150         SEIZE       CLERK                ;Capture the clerk
+160         DEPART      LINE                 ;Leave the line
+170         ADVANCE     100,30               ;Use the clerk
+180         RELEASE     CLERK                ;Free the clerk
+190         TERMINATE                        ;Leave the tool crib area
+210 *
+211 *          Model Segment 3
+212 *
+213         GENERATE    28800                ;Timer arrives after 8 hours
+214         TERMINATE   1                    ;Shut off the run
+220         START       1                    ;Start the run
+

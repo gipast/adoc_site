@@ -1,0 +1,21 @@
+ ;  GPSS/PC Program file B:SCHR2D                04-15-1984   19:24:19
+1 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+4 NUMBER    EQU 4
+5           SIMULATE    
+10 *
+20 *            Model Segment 1
+30 *
+40          GENERATE    ,,,NUMBER            ;Provide 4 assemblers
+46 BACKPLACE ADVANCE    30,5                 ;Assemble next widget
+47          SEIZE       OVEN                 ;Capture the oven
+50          ADVANCE     8,2                  ;Use the oven
+80          RELEASE     OVEN                 ;Free the oven
+90          TRANSFER    ,BACKPLACE           ;Go do the next assembly
+100 *
+110 *          Model Segment 2
+120 *
+140         GENERATE    2400                 ;Timer arrives after 5 days
+214         TERMINATE   1                    ;Shut off the run
+300         REPORT      SCHR2D.REP 
+350         START       1,,,1 
+

@@ -1,0 +1,61 @@
+ ;  GPSS/PC Program file SCHR6C.TST                05-28-1984   18:13:19
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+110 *       A SPARE PARTS PROBLEM     
+115 *     
+120 *LOC         OPERATION      A,B,C,D,E,F,G            COMMENTS     
+125         SIMULATE         
+130 *     
+135 *          NON-STANDARD RANDOM NUMBER SEQUENCE INITIALIZATION(S)     
+140 *     
+145         RMULT       121,,17              ;Set random sequences for 1st run
+150 *     
+155 *          FUNCTION DEFINITION(S)     
+160 *     
+165 SNORM   FUNCTION    RN2,C25              ;Standard normal distribution
+0,-5/.00003,-4/.00135,-3/.00621,-2.5/.02275,-2
+.06681,-1.5/.11507,-1.2/.15866,-1/.21186,-.8/.27425,-.6
+.34458,-.4/.42074,-.2/.5,0/.57926,.2/.65542,.4
+.72575,.6/.78814,.8/.84134,1/.88493,1.2/.93319,1.5
+.97725,2/.99379,2.5/.99865,3/.99997,4/1,5
+195 XPDIS   FUNCTION    RN3,C24              ;Eponential distribution function
+0,0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69/.6,.915/.7,1.2/.75,1.38
+.8,1.6/.84,1.83/.88,2.12/.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2
+.97,3.5/.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7/.9998,8
+200 *     
+205 *         VARIABLE DEFINITION(S)     
+210 *     
+215 VAR1    FVARIABLE 700#FN$SNORM+3500     
+220 FIX     FVARIABLE 5#FN$SNORM+80     
+225 *     
+230 *         MODEL SEGMENT 1     
+235 *     
+240         GENERATE    ,,,1                 ;First worker arrives     
+245 AGAIN   SEIZE       MAC                  ;Turn the machine on     
+250         ADVANCE     V$VAR1               ;Part's lifetime elapses     
+255         RELEASE     MAC                  ;Turn the machine off     
+260         ADVANCE     40                   ;Remove the failed part     
+265         SPLIT       1,FETCH              ;Send co-worker to fetch a spare
+270         SEIZE       FIXER                ;Capture the repairman     
+275         ADVANCE     V$FIX                ;Repair proceeds     
+280         RELEASE     FIXER                ;Free the repairman     
+285         SAVEVALUE   1+,1                 ;Update the number of good spares
+290         TERMINATE                        ;Leave, co-worker will carry on
+295 FETCH   TEST G      X1,0                 ;Wait (if necessary) for good one
+300         SAVEVALUE   1-,1                 ;Update the number of good spares
+305         ADVANCE     60                   ;Install the part     
+310         TRANSFER    ,AGAIN               ;Go turn on the machine     
+315 *     
+320 *         MODEL SEGMENT 2     
+325 *     
+330         GENERATE    90,FN$XPDIS,,,1      ;'Other items' arrive at shop
+335         ADVANCE                          ;Dummy advance block     
+340         SEIZE       FIXER                ;Capture the repairman     
+345         ADVANCE     80,40                ;Repair proceeds     
+350         RELEASE     FIXER                ;Free the repairman     
+355         TERMINATE                        ;'Other item' leaves     
+360 *     
+365 *         MODEL SEGMENT 3     
+370 *     
+375         GENERATE    104000               ;Timer comes after 260 weeks
+380         TERMINATE   1                    ;Shut off the run     
+

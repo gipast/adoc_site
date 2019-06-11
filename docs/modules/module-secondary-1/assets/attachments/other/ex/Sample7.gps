@@ -1,0 +1,56 @@
+ ;  GPSS/PC Program File A:TRAFFIC1.GPS.  (V 2, # 39397)  06-17-1993 13:36:18
+10 *************************************************************************        
+20 *                                                                       *        
+30 *                Automobile Arrival Simulation        
+40 *                                                                       *        
+50 *    For simplicity, this model only deals with one-way traffic        
+60 *    in North-South and East-West directions.                           *        
+70 *************************************************************************        
+80          GENERATE     20,10               ;Create next automobile.        
+90          QUEUE        EASTWEST        
+100         TEST E       X$EWLIGHT,F$INTERSECTION ;Block until green, and        
+110 *                                            the intersection is free        
+120         SEIZE        INTERSECTION        
+130         DEPART       EASTWEST            ;End queue time.        
+140         ADVANCE      10                  ;Cross the intersection.        
+150         RELEASE      INTERSECTION        
+160         TERMINATE    1                   ;Auto leaves intersection area.        
+170 *        
+180         GENERATE     30,10               ;Create next automobile.        
+190         QUEUE        NORTHSOUTH        
+200         TEST E       X$NSLIGHT,F$INTERSECTION ;Block until green and        
+210 *                                         the intersection is free        
+220         SEIZE        INTERSECTION        
+230         DEPART       NORTHSOUTH          ;End queue time.        
+240         ADVANCE      10                  ;Cross the intersection.        
+250         RELEASE      INTERSECTION        
+260         TERMINATE    1                   ;Auto leaves intersection area.        
+270 ************************************************************************        
+280 *                                                                      *        
+290 *                Traffic Light Simulation                              *        
+300 *                                                                      *        
+310 ************************************************************************        
+320         GENERATE     ,,,1        
+330 BEGIN   SAVEVALUE    NSLIGHT,RED         ;North-South light turns red
+340         SAVEVALUE    EWLIGHT,GREEN       ;East-West light turns green 
+350         ADVANCE      GREENTIME           ;Light is green        
+360         SAVEVALUE    NSLIGHT,GREEN       ;North-South light turns green
+370         SAVEVALUE    EWLIGHT,RED         ;East-West light turns red
+380         ADVANCE      REDTIME             ;Light is red        
+390         TRANSFER     ,BEGIN        
+400 GREENTIME EQU        200        
+410 * When the light is GREEN (value 0) and the intersection is not busy (the
+415 * State Variable(SNA) F$INTERSECTION evaluates as 0), a car may pass into
+420 * the intersection. These conditions are tested at the TEST block in lines
+430 * 100 & 200. When the light is red (value 100) or the intersection is busy
+440 * (SNA F$INTERSECTION returns the value 1), the condition at the TEST
+450 * block will not be met and the car will not proceed.        
+460 GREEN   EQU          0        
+465 RED     EQU          100
+470 REDTIME EQU          300        
+480         PLOT         Q$EASTWEST,20,0,8000 ;East-West congestion.        
+490         PLOT         Q$NORTHSOUTH,20,0,8000 ;North-South congestion.        
+500 *        
+510 *  DO START 4000 EW Congestion builds. Try greentime equ 1000. Fine        
+520 *  but NS congestion builds.  GREENTIME EQU 400 works for both.        
+

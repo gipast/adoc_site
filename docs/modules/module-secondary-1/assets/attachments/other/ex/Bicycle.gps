@@ -1,0 +1,87 @@
+;  BICYCLE.GPS,  by Gerard F. Cummings
+100 ******************************************        
+110 *                                        *        
+120 *    BICYCLE ASSEMBLY MODEL GPSSPC       *        
+130 ******************************************        
+150 XPDIS   FUNCTION     RN1,C24              ;EXPONENTIAL FUNCTION
+0.0,0.0/0.1,.104/.2,.222/.3,.335/.4,.509/.5,.69
+.6,.915/.7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12
+.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2/.97,3.5
+.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7.0/.9997,8.0        
+160 ********************************************        
+170 ORDERS  FUNCTION     P$DEPARTMENT,L6
+1,ORDER/2,FRAME/3,SADDLE/4,HANDLEBARS/5,WHEELS/6,PEDALS        
+180 ********************************************        
+190 SNORM   FUNCTION     RN1,C25              ;STANDARD NORMAL FUNCTION
+0.0,-5/0.00003,-4./.00135,-3.0/.00621,-2.5/.02275,-2./.06681,-1.5
+.11507,-1.2/.15866,-1./.21186,-.8/.27425,-.6/.34458,-.4/.42074,-.2
+.5,0.0/.57926,.2/.65542,.4/.72575,.6/.78814,.8/.84134,1/.88493,1.2
+.93319,1.5/.97725,2/0.99379,2.5/.99865,3/0.99997,4.0/1.0,5.0        
+200 VAR1    FVARIABLE    90+(10#FN$SNORM)        
+210 TRANSIT TABLE        M1,100,100,20        
+220 ********************************************        
+230 CLERKS  STORAGE      2        
+240 FRAMERS STORAGE      3        
+250 SADDLERS STORAGE     1        
+260 HANDLERS STORAGE     1        
+270 WHEELERS STORAGE     1        
+280 PEDALERS STORAGE     1        
+290 BUILDERS STORAGE     4        
+300 PACKERS STORAGE      3        
+310 ********************************************        
+320         GENERATE     50,10               ;ORDER ARRIVES FOR BICYCLE        
+330         SPLIT        5,FACTORY,DEPARTMENT  ;MAKE 5 COPIES OF ORDER       
+340 ORDER   ENTER        CLERKS        
+350         ADVANCE      80,10               ;PREPARE INVOICE        
+360         LEAVE        CLERKS        
+370 INVOICE MATCH        BICYCLE             ;SYNCHRONIZE WITH BICYCLE        
+380         TERMINATE                        ;TRANSACTION FINISHED        
+390 *******************************************        
+400 FACTORY TRANSFER     FN,ORDERS           ;ROUTE TO CORRECT DEPT        
+410 *******************************************        
+420 FRAME   ENTER        FRAMERS        
+430         ADVANCE      65,FN$XPDIS         ;MAKE FRAME        
+440         ADVANCE      12,2                ;INSPECT FRAME        
+450         LEAVE        FRAMERS        
+460         TRANSFER     ,BUILD              ;SEND FOR ASSEMBLY        
+470 *******************************************        
+480 SADDLE  ENTER        SADDLERS        
+490         ADVANCE      6,3                 ;GET A SADDLE        
+500         ADVANCE      3,1                 ;INSPECT THE SADDLE        
+510         LEAVE        SADDLERS        
+520         TRANSFER     ,BUILD              ;SEND FOR ASSEMBLY        
+530 *******************************************        
+540 HANDLEBARS ENTER     HANDLERS        
+550         ADVANCE      4,2                 ;GET HANDLEBARS        
+560         ADVANCE      3,1                 ;INSPECT HANDLEBARS        
+570         LEAVE        HANDLERS        
+580         TRANSFER     ,BUILD              ;SEND FOR ASSEMBLY        
+590 *******************************************        
+600 WHEELS  ENTER        WHEELERS        
+610         ADVANCE      3,1                 ;GET WHEELS        
+620         ADVANCE      3,1                 ;INSPECT WHEELS        
+630         LEAVE        WHEELERS        
+640         TRANSFER     ,BUILD              ;SEND FOR ASSEMBLY        
+650 *******************************************        
+660 PEDALS  ENTER        PEDALERS        
+670         ADVANCE      5,1                 ;GET PEDALS        
+680         ADVANCE      3,1                 ;INSPECT PEDALS        
+690         LEAVE        PEDALERS        
+700         TRANSFER     ,BUILD              ;SEND FOR ASSEMBLY        
+710 *******************************************        
+720 BUILD   ASSEMBLE     5                   ;ASSEMBLE        
+730         ENTER        BUILDERS        
+740         ADVANCE      V$VAR1              ;TIME FOR ASSEMBLING        
+750         ADVANCE      35,5                ;INSPECT        
+760         LEAVE        BUILDERS        
+770 BICYCLE MATCH        INVOICE             ;WAIT FOR PAPERWORK        
+780         ENTER        PACKERS        
+790         ADVANCE      40,5                ;PACK FOR DISPATCH        
+800         LEAVE        PACKERS        
+810         TABULATE     TRANSIT        
+820         TERMINATE                        ;TRANSACTION FINISHED        
+830 *******************************************        
+840         GENERATE     480                 ;TIMER EVERY DAY        
+850         TERMINATE    1                   ;TIMER XACT FINISHED        
+860 *******************************************        
+

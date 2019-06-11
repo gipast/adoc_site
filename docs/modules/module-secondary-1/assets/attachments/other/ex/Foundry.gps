@@ -1,0 +1,76 @@
+
+;      FOUNDRY.GPS, by Gerard F. Cummings
+100 *************************************         
+110 *                                   *         
+120 *     FOUNDRY SIMULATION MODEL      *         
+130 *         GPSSPC  PROGRAM           *         
+140 *                                   *         
+150 *************************************         
+170         RMULT        85327
+175 *            TIME UNIT IS ONE MINUTE
+180 *            P1 = TYPE OF JOB         
+190 *            P2 = NUMBER IN THE ORDER         
+200 *            P3 = WEIGHT OF A COMPONENT         
+210 *            P4 = MOLDING TIME PER COMPONENT         
+220 *            P5 = DUE DATE         
+230 *            P6 = TOTAL WEIGHT PER ORDER         
+240 *            P7 = INDEX FOR LOOPING         
+250 XPDIS   FUNCTION     RN1,C24             ;EXPONENTIAL FUNCTION
+0.0,0.0/0.1,.104/.2,.222/.3,.335/.4,.509/.5,.69
+0.6,.915/.7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12
+0.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2/.97,3.5
+0.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7.0/.9997,8.0         
+260 WEIGHT  FUNCTION     RN1,C8              ;WEIGHT PER COMPONENT IN KGS
+0.0,3/.13,6/.25,11/.50,20/.70,28/.85,35/.95,42/1.0,50         
+270 ORDERTYPE FUNCTION   RN1,D2              ;NEW ORDER P1=1: REPEAT P1=2
+0.3,1/1.0,2         
+280 SIZE    VARIABLE     RN1@19+6            ;SIZE OF ORDER         
+290 DDATE   VARIABLE     V$MTIME#P2+RN1@121+40+C1 ;DUE DATE
+300 MTIME   VARIABLE     (P3#2)              ;MOLD TIME PER COMPONENT         
+310 DAY     VARIABLE     (C1/480)            ;DAY INDICATOR         
+320 TOTAL   VARIABLE     P3#P2               ;WEIGHT PER ORDER         
+330 TIMES   TABLE        M1,400,400,20       ;TRANSIT TIME
+340 CAST    TABLE        X$WTMOLD,400,400,20 ;WEIGHT CAST
+350 MOLDERS STORAGE      18                  ;MOLDERS EMPLOYED
+360 ******************************************
+370         GENERATE     60,FN$XPDIS,,,3     ;JOBS ARRIVE EVERY HOUR
+380         ASSIGN       1,FN$ORDERTYPE      ;TYPE OF JOB         
+390         TEST E       P1,2,NEWJOB         ;IS IT A REPEAT ORDER?         
+400         ADVANCE      300,180             ;LOCATE PATTERN         
+410 COMMENCE ASSIGN      2,V$SIZE            ;SIZE OF ORDER         
+420         ASSIGN       3,FN$WEIGHT         ;WEIGHT OF A COMPONENT         
+430         ASSIGN       4,V$MTIME           ;MOLDING TIME PER COMPONENT         
+440         ASSIGN       5,V$DDATE           ;DUE DATE         
+450         ASSIGN       6,V$TOTAL           ;TOTAL WEIGHT OF ORDER         
+460         GATE SNF     MOLDERS,WAIT        ;ANY MOLDERS FREE ?         
+470 BEGIN   ENTER        MOLDERS             ;MOLDER BEGINS ORDER         
+480         ASSIGN       7,P2                ;P7=NUMBER IN ORDER         
+490 NEXT    ADVANCE      P4                  ;MOLDING TIME PER COMPONENT         
+500         LOOP         7,NEXT              ;LOOP FOR EVERY COMPONENT         
+510         LEAVE        MOLDERS             ;FREE MOLDER,ORDER COMPLETE         
+520         SAVEVALUE    WTMOLD+,P6               ;SUM WEIGHT MOLDED EACH ORDER         
+530         UNLINK       1,BEGIN,1           ;RELEASE NEXT ORDER         
+540         TABULATE     TIMES               ;TABULATE TRANSIT TIME         
+550         TERMINATE                        ;DESTROY XACT         
+560 *
+570 NEWJOB  ADVANCE      4320,1440           ;TIME TO MAKE NEW PATTERN         
+580         TRANSFER     ,COMMENCE           ;TRANSFER TO COMMENCE ORDER         
+590 *         
+600 WAIT    LINK         1,P5                ;LINK WAITING ORDERS IN CHAIN 1         
+610 *         
+615 ******************************************
+620         GENERATE     420,,,1,2           ;START CASTING OPERATION CYCLE         
+630 AGAIN   SUNAVAIL     MOLDERS             ;MARKS START OF CASTING CYCLE         
+640         ADVANCE      60                  ;CASTING CYCLE LASTS 60 MINS         
+650         SAVAIL       MOLDERS             ;MOLDERS FREE FOR MOLDING         
+660         ADVANCE      420                 ;420 MINS ELAPSE BEFORE CASTING         
+670         TABULATE     CAST                ;RECORD TOTAL WEIGHT CAST         
+680         SAVEVALUE    TOTCAST+,X$WTMOLD         ;ACCUMULATE TOTAL CAST SO FAR         
+690         SAVEVALUE    WTMOLD,0            ;RESET TO ZERO EACH DAY         
+700         TRANSFER     ,AGAIN              ;RETURN XACT TO START AGAIN         
+710 **************TIMER***********************         
+720         GENERATE     4800,,,,4           ;XACT EVERY TEN DAYS         
+730         SAVEVALUE    V$DAY,X$TOTCAST     ;RECORDS TOTAL WEIGHT CAST         
+740         TERMINATE    1                   ;DESTROY XACT         
+750 ******************************************         
+

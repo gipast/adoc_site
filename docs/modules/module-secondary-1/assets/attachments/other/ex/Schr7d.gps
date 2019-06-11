@@ -1,0 +1,83 @@
+ ;  GPSS/PC Program file SCHR7D.TST                05-28-1984   10:12:36
+10 *   Adapted from "Simulation Using GPSS", by Thomas J. Schriber
+105 *    IMPACT OF LIMITED MANPOWER ON COMPLETION TIMES IN PRECEDENCE NETWORKS
+110 *     
+115 *LOC      OPERATION      A,B,C,D,E,F,G           COMMENTS     
+120         SIMULATE         
+125 *     
+130 *        STORAGE CAPACITY DEFINITION(S)     
+135 *     
+140 MEN     STORAGE     5                    ;Supply 5 men initially     
+145 *     
+150 *         TABLE DEFINITION(S)     
+155 *     
+160 INUSE   TABLE       S$MEN,0,1,20          ;Distribution of men in use     
+165 RTIME   TABLE       M1,25,25,20          ;Table for project completion time
+170 *     
+175 *        MODEL 1 SEGMENT     
+180 *     
+185         GENERATE    ,,,1                 ;Provide a transaction whenever n
+190 GATER   GATE LR     NEXT1                ;Wait until preceding iteration i
+195         LOGIC S     NEXT1                ;Shut gate on following transactio
+198         SPLIT       1,GATER     
+200 *     
+205 NODE1   SPLIT       1,SUB13              ;Send offspring to handle subproje
+210 SUB12   ENTER       MEN,4                ;Get men for subproject 1-to-2
+215         ADVANCE     14,6                 ;Do the subproject     
+220         LEAVE       MEN,4                ;Free the men     
+225 *     
+230 NODE2   SPLIT       1,SUB24              ;Send offspring to handle subproje
+235 SUB25   ENTER       MEN,5                ;Get men for subproject 2-to-5
+240         ADVANCE     18,4                 ;Do the subproject     
+245         LEAVE       MEN,5                ;Free the men     
+250 *     
+255 NODE5   ASSEMBLE    2                    ;Wait for completion of 2-to-5 and
+260 SUB57   ENTER       MEN,2                ;Get men for subproject 5-to-7
+265         ADVANCE     8,3                  ;Do the subproject     
+270         LEAVE       MEN,2                ;Free the men     
+275         TRANSFER    ,NODE7               ;Go signal completion of 5-to-7
+280 *     
+285 SUB24   ENTER       MEN,3                ;Get men for subproject 2-to-4
+290         ADVANCE     10,3                 ;Do the subproject     
+295         LEAVE       MEN,3                ;Free the men     
+300 *     
+305 NODE4   ASSEMBLE    2                    ;Wait for completion of 2-to-4 and
+310         SPLIT       1,NODE5              ;Send offspring to signal node 4 c
+315 SUB47   ENTER       MEN,4                ;Get men for subproject 4-to-7
+320         ADVANCE     15,5                 ;Do the subproject     
+325         LEAVE       MEN,4                ;Free the men     
+330 *     
+335 NODE7   ASSEMBLE    3                    ;Wait for completion of final subp
+340         TABULATE    RTIME                ;Record project time in table
+345         LOGIC R     NEXT1                ;Open gate for the next iteration
+350         TERMINATE   1                    ;Current iteration is finished
+355 *     
+360 SUB13   ENTER       MEN,3                ;Get men for subproject 1-to-3
+365         ADVANCE     20,9                 ;Do the subproject     
+370         LEAVE       MEN,3                ;Free the man     
+372 *     
+374 NODE3   SPLIT       1,SUB34              ;Send offspring to handle proj 3-4
+376 SUB36   ENTER       MEN                  ;Get man for subproject 3-to-6
+378         ADVANCE     25,7                 ;Do the subproject     
+380         LEAVE       MEN                  ;Free the men     
+382 *     
+383 NODE6   ENTER       MEN,4                ;Get men for subproject 6-to-7
+385         ADVANCE     10,3                 ;Do the subproject     
+390         LEAVE       MEN,4                ;Free the men     
+395         TRANSFER    ,NODE7               ;Go signal completion of 3-to-7
+400 *     
+405 SUB34   ENTER       MEN,2                ;Get men for subproject 3-to-4
+410         ADVANCE     22,5                 ;Do the subproject     
+415         LEAVE       MEN,2                ;Free the men     
+420         TRANSFER    ,NODE4               ;Go signal completion of 3-to-4
+425 *     
+430 *        MODEL SEGMENT 2     
+435 *     
+440         GENERATE    ,,,1,1               ;Bring in one high-priority observ
+445 GRIND   MARK        1                    ;Set P1 = absolute clock time
+447         SAVEVALUE   CLOCK,AC1     
+450         TEST NE     AC1,X$CLOCK          ;Wait until the clock changes
+455         TABULATE    INUSE,MP1            ;Record current number of men-in-u
+460         TRANSFER    ,GRIND               ;Go set up for the next clock upda
+465 *     
+

@@ -1,0 +1,23 @@
+
+
+
+
+Program LNUM-REM
+
+
+The purpose of the program Lnum-rem.exe is to remove line numbers from a
+
+GPSS/PC model so that it can be used with another version of GPSS.  The
+
+GPSS/PC model must be in an ASCII file and the model without line numbers
+
+will also be in an ASCII file. The file names for the two GPSS models must
+
+be different. 
+
+
+*Please note:  This program has been supplied by a user of GPSS/PC with
+               the hope that it will be useful to other users.
+	       It is supplied "as is" with no warranty of any kind.
+
+

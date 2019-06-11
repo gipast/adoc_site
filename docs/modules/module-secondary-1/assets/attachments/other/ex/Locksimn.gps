@@ -1,0 +1,63 @@
+
+ ;    LOCKSIMN.GPS, by Gerard F. Cummings
+100 *************************************         
+110 *          LOCK SIMULATION          *         
+120 *        GPSS/PC PROGRAM            *         
+130 *************************************         
+140         SIMULATE              
+150         RMULT        94521         
+160 *       X$UPLIMIT=   NO. OF BARGES TO GO UP
+170 *       X$DOWNLIMIT= NO. OF BARGES TO GO DOWN
+180 *       X$UPCOUNT=   NO. OF BARGES WHICH HAVE PASSED UP
+190 *       X$DOWNCOUNT= NO. OF BARGES WHICH HAVE PASSED DOWN
+200 UPBARGE FUNCTION     X$UPCOUNT,D6
+1,58/2,46/3,46/4,46/5,46/6,46
+210 DOWNBARGE FUNCTION   X$DOWNCOUNT,D6
+1,58/2,46/3,46/4,46/5,46/6,46
+220 UPQ     QTABLE       UPQ,20,20,20         
+230 DOWNQ   QTABLE       DNQ,20,20,20         
+240 UPCOUNT TABLE        X$UPCOUNT,2,2,20         
+250 DNCOUNT TABLE        X$DOWNCOUNT,2,2,20         
+260         INITIAL      X$UPLIMIT,6         ;NUMBER OF BARGES TO GO UP
+270         INITIAL      X$DOWNLIMIT,6       ;NUMBER OF BARGES TO GO DOWN
+280 ***********************************         
+290         GENERATE     100,30,40           ;UP BARGE ARRIVES
+300         QUEUE        UPQ                 ;JOIN QUEUE         
+310         GATE LR      LOCK                ;GATE FOR THE LOCK         
+320         SEIZE        LOCK                ;GET THE LOCK         
+330         SAVEVALUE    UPCOUNT+,1          ;ACCUMULATE UP NUMBER         
+340         DEPART       UPQ                 ;DEPART THE QUEUE         
+350         ADVANCE      FN$UPBARGE          ;TIME TO SERVICE BARGE
+360         TEST GE      X$UPLIMIT,X$UPCOUNT,SWH1  ;HAVE ENOUGH PASSED?
+370         TEST NE      Q$UPQ,0,SWH1        ;CHECK IF UPQ IS ZERO         
+380         RELEASE      LOCK                ;FREE THE LOCK         
+390         TERMINATE             
+400 *----------------------------------
+410 SWH1    LOGIC S      LOCK                ;SET THE LOCK OTHER WAY         
+420         RELEASE      LOCK                ;FREE THE LOCK         
+430         TABULATE     UPCOUNT             ;RECORD NO. PASSED UP
+440         SAVEVALUE    UPCOUNT,0           ;SET COUNT TO ZERO         
+450         TERMINATE             
+460 ***********************************         
+470         GENERATE     100,30,60           ;ARRIVAL OF DOWN BARGE
+480         QUEUE        DNQ                 ;ENTER QUEUE         
+490         GATE LS      LOCK                ;IS LOCK SET         
+500         SEIZE        LOCK                ;GET THE LOCK         
+510         SAVEVALUE    DOWNCOUNT+,1                ;ACCUMULATE DOWN COUNT         
+520         DEPART       DNQ                 ;DEPART THE QUEUE         
+530         ADVANCE      FN$DOWNBARGE        ;TIME FOR DOWN BARGE
+540         TEST GE      X$DOWNLIMIT,X$DOWNCOUNT,SWH2  ;IS DOWN COUNT REACHED?         
+550         TEST NE      Q$DNQ,0,SWH2        ;ANY DOWN BARGES LEFT ?
+560         RELEASE      LOCK                ;FREE THE LOCK         
+570         TERMINATE             
+580 *----------------------------------
+590 SWH2    LOGIC R      LOCK                ;SET LOCK FOR OTHER WAY         
+600         RELEASE      LOCK                ;FREE THE LOCK         
+610         TABULATE     DNCOUNT             ;RECORD DOWN COUNT         
+620         SAVEVALUE    DOWNCOUNT,0         ;RESET DOWN COUNT TO ZERO         
+630         TERMINATE             
+635 **********************************         
+640         GENERATE     1440                ;ONE XAC PER DAY         
+650         TERMINATE    1                   ;ONE DAY HAS PASSED         
+660         REPORT       LOCKS.REP           ;LOCK SIMULATION
+

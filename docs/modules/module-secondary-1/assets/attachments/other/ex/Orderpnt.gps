@@ -1,0 +1,35 @@
+
+;   ORDERPNT.GPS, by Gerard F. Cummings
+100 **************************************        
+110 *                                    *        
+120 *   ORDER POINT INVENTORY SYSTEM     *        
+130 *          GPSS/PC  PROGRAM          *        
+140 *                                    *        
+150 **************************************        
+160 *  Initialize and define        
+170         INITIAL      X$EOQ,500           ;ECONOMIC ORDER QTY        
+180         INITIAL      X$POINT,600         ;ORDER POINT        
+190         INITIAL      X$STOCK,700         ;SET INITIAL STOCK =700        
+200 INVENTORY TABLE      X$STOCK,0,50,20          ;TABLE OF STOCK LEVELS        
+210 SALES   TABLE        P$DEMAND,38,2,20          ;TABLE OF SALES LEVELS        
+220 VAR2    VARIABLE     RN1@24+40        
+230 **************************************        
+240         GENERATE     ,,,1        
+250 AGAIN   TEST L       X$STOCK,X$POINT     ;ORDER PLACED ON SUCCESSFUL TEST        
+260         ADVANCE      5                   ;LEAD TIME = 1 WEEK        
+270         SAVEVALUE    STOCK+,X$EOQ        ;ECONOMIC ORDER        
+280         TRANSFER     ,AGAIN              ;CYCLE XACT AGAIN        
+290 *************************************        
+300         GENERATE     1                   ;DAILY DEMAND XACT        
+310         ASSIGN       DEMAND,V$VAR2       ;ASSIGN DAILY DEMAND        
+312         TABULATE     INVENTORY           ;RECORD INVENTORY        
+315         TEST GE      X$STOCK,P$DEMAND    ;MAKE SURE ORDER CAN BE FILLED        
+320         SAVEVALUE    STOCK-,P$DEMAND     ;REMOVE DEMAND FROM STOCK        
+330         SAVEVALUE    SOLD,P$DEMAND       ;X$SOLD =DAILY DEMAND        
+350         TABULATE     SALES               ;RECORD DAILY SALES        
+360         TERMINATE    1                   ;DAILY TIMER        
+370 *************************************        
+390         PLOT         X$SOLD,60,0,100     ;DAILY DEMAND        
+400         PLOT         X$STOCK,800,0,100   ;INVENTORY PLOT        
+500         START        100                 ;SIMULATE 100 DAYS        
+

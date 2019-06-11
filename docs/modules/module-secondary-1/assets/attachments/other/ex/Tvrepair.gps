@@ -1,0 +1,51 @@
+ ;      TVREPAIR.GPS, by Gerard F. Cummings
+100 *******************************************        
+110 *      TELEVISION  MAINTENANCE  MAN       *        
+120 *            GPSS/PC  MODEL               *        
+130 *******************************************        
+140 *   REPAIR OF RENTED SETS ONE EACH WEEK   *        
+150 *       TIME  UNIT  IS  ONE  MINUTE       *        
+160 *******************************************        
+170         GENERATE     2400,480,,,1        ;OVERHAUL OF A RENTED SET        
+180         QUEUE        OVERHAUL            ;QUEUE FOR SERVICE        
+182         QUEUE        ALLJOBS             ;COLLECT GLOBAL STATISTICS        
+190         SEIZE        MAINTENANCE         ;OBTAIN  TV  REPAIRMAN        
+200         DEPART       OVERHAUL            ;LEAVE QUEUE FOR MAN        
+202         DEPART       ALLJOBS             ;COLLECT GLOBAL STATISTICS        
+210         ADVANCE      600,60              ;COMPLETE JOB 10+/-1 HOURS        
+220         RELEASE      MAINTENANCE         ;FREE REPAIRMAN        
+230         TERMINATE                        ;REMOVE ONE  TRANSACTION        
+240 ******************************************        
+245 *  On the spot repairs        
+250         GENERATE     90,10,,,3           ;ON-THE-SPOT  REPAIRS        
+260         QUEUE        SPOT                ;QUEUE FOR SPOT REPAIRS        
+262         QUEUE        ALLJOBS             ;COLLECT GLOBAL STATISTICS        
+270         PREEMPT      MAINTENANCE,PR      ;GET THE  TV  REPAIRMAN        
+280         DEPART       SPOT                ;DEPART THE 'SPOT' QUEUE        
+282         DEPART       ALLJOBS             ;COLLECT GLOBAL STATISTICS        
+290         ADVANCE      15,5                ;TIME FOR TUNING/FUSE/FAULT        
+300         RETURN       MAINTENANCE         ;FREE MAINTENANCE MAN        
+310         TERMINATE            
+320 ******************************************        
+325 *  Normal repairs on customer owned sets        
+330         GENERATE     300,60,,,2          ;NORMAL  TV  REPAIRS        
+340         QUEUE        SERVICE             ;QUEUE FOR SERVICE        
+342         QUEUE        ALLJOBS             ;COLLECT GLOBAL STATISTICS        
+350         PREEMPT      MAINTENANCE,PR      ;PREEMPT MAINTENANCE MAN        
+360         DEPART       SERVICE             ;DEPART THE 'SERVICE' QUEUE        
+362         DEPART       ALLJOBS             ;COLLECT GLOBAL STATISTICS        
+370         ADVANCE      120,30              ;NORMAL  SERVICE  TIME        
+380         RETURN       MAINTENANCE         ;RELEASE THE MAN        
+390         TERMINATE            
+400 ******************************************        
+410         GENERATE     480                 ;ONE XACT EACH DAY        
+420         TERMINATE    1        
+425 *  Day counter        
+430 ******************************************        
+435 *  Tables of queue statistics        
+440 OVERHAUL QTABLE      OVERHAUL,10,10,20        
+450 SPOT    QTABLE       SPOT,10,10,20        
+460 SERVICE QTABLE       SERVICE,10,10,20        
+470 ALLJOBS QTABLE       ALLJOBS,10,10,20        
+480 ******************************************        
+

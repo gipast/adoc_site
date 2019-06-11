@@ -1,0 +1,48 @@
+ ;      MANUFACT.GPS, by Gerard F. Cummings
+100 *****************************************        
+110 *                                       *        
+120 *        MANUFACTURING  COMPANY         *        
+130 *         GPSS/PC  SIMULATION           *        
+140 *****************************************        
+160 *      TIME UNIT IS ONE SECOND          *        
+170 XPDIS   FUNCTION     RN1,C24
+0.0,0.0/.1,.104/.2,.222/.3,.355/.4,.509/.5,.69/
+.6,.915/.7,1.2/.75,1.38/.8,1.6/.84,1.83/.88,2.12/
+.9,2.3/.92,2.52/.94,2.81/.95,2.99/.96,3.2/.97,3.5/
+.98,3.9/.99,4.6/.995,5.3/.998,6.2/.999,7.0/.9997,8.0        
+180 SIZEORDER FUNCTION   RN1,D7              ;ORDER SIZE
+.10,6/.35,12/.65,18/.80,24/.92,30/.97,36/1.0,48        
+190 TRANSIT TABLE        M1,100,100,20          ;TRANSIT TIME        
+200 NUMBER  TABLE        X1,100,100,20          ;NO. PACKED EACH DAY        
+210 PTIME   VARIABLE     10#P1+120           ;PACKING TIME        
+215 AMOUNT  EQU          1000                ;INITIAL STOCK AMOUNT        
+220 STOCK   STORAGE      4000                ;WAREHOUSE HOLDS 4000 UNITS        
+240 ****************************************        
+250         GENERATE     900,FN$XPDIS        ;ORDER ARRIVES        
+260         ASSIGN       1,1,SIZEORDER       ;P1 = ORDER SIZE        
+270         TEST GE      S$STOCK,P1,STOCKOUT  ;IS STOCK SUFFICIENT?        
+290         LEAVE        STOCK,P1            ;REMOVE P1 FROM STOCK        
+300         QUEUE        PACKING        
+310         SEIZE        MACHINE             ;GET A MACHINE        
+320         DEPART       PACKING        
+330         ADVANCE      V$PTIME             ;PACKING TIME        
+340         RELEASE      MACHINE             ;FREE THE MACHINE        
+360         SAVEVALUE    1+,P1               ;ACCUMULATE NO. PACKED        
+370         TABULATE     TRANSIT             ;RECORD TRANSIT TIME        
+380         TERMINATE            
+385 STOCKOUT TERMINATE           
+390 ****************************************        
+400         GENERATE     2700,300,1          ;XACT EVERY 40 +/- 5 MINS        
+410         ENTER        STOCK,60            ;MAKE 60, STOCK INCREASED BY 60        
+420 STOCKAD TERMINATE            
+430 ****************************************        
+440         GENERATE     28800               ;XACT EVERY DAY        
+450         TABULATE     NUMBER        
+460         SAVEVALUE    1,0        
+470         TERMINATE    1        
+480 ****************************************        
+540         GENERATE     ,,,1,10             ;INITIAL STOCK XACT        
+550         ENTER        STOCK,AMOUNT        ;SET INITIAL STOCK        
+570         TERMINATE            
+580 ****************************************        
+
