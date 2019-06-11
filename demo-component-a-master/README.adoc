@@ -1,0 +1,31 @@
+= Demo Documentation Component A
+// :idprefix:
+// :idseparator: -
+// URIs:
+:uri-project: https://antora.org
+:uri-docs: https://docs.antora.org
+:uri-org: https://gitlab.com/antora
+:uri-group: {uri-org}/demo
+:uri-site-readme: {uri-group}/demo-site/blob/master/README.adoc
+:uri-opendevise: https://opendevise.com
+
+Component A is an example of a documentation component.
+It is used by the Antora Demo site.
+The playbook and instructions for the Demo site are located in the {uri-site-readme}[Demo site playbook project].
+
+== Resources
+
+* {uri-project}[Antora Project]
+* {uri-docs}[Antora Docs]
+* {uri-org}[Antora Repositories]
+
+== Copyright and License
+
+Copyright (C) 2017-2018 OpenDevise Inc. and individual Antora Project contributors.
+
+Use of this software is granted under the terms of the https://www.mozilla.org/en-US/MPL/2.0/[Mozilla Public License Version 2.0] (MPL-2.0).
+See link:LICENSE[] to find the full license text.
+
+== Authors
+
+Development of Antora is led and sponsored by {uri-opendevise}[OpenDevise Inc].
